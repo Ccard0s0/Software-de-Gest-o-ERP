@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
-import FloatingLines from "./components/FloatingLines"; // CORRIGIDO: Caminho correto para a pasta components
+import FloatingLines from "./components/FloatingLines"; // Caminho correto para a pasta components
 import Dashboard from "./components/Dashboard"; // Importa a tua página de gestão
 
 // IMPORTA O TEU LOGO DA PASTA ASSETS
-import logoEugeen from "./assets/logo.png"; // CORRIGIDO: Caminho correto para a pasta assets a partir da raiz src
+import logoEugeen from "./assets/LOGO.png"; // CORRIGIDO: Agora usa o formato case-sensitive correto (LOGO.png)
 
 export default function App() {
   // 1. ESTADO DE AUTENTICAÇÃO (Controla se mostra o Login ou a Gestão)
