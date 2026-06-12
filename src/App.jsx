@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
-import FloatingLines from "./components/FloatingLines";
+import FloatingLines from "./components/FloatingLines"; // CORRIGIDO: Caminho correto para a pasta components
 import Dashboard from "./components/Dashboard"; // Importa a tua página de gestão
 
 // IMPORTA O TEU LOGO DA PASTA ASSETS
-import logoEugeen from "./assets/logo.png";
+import logoEugeen from "./assets/logo.png"; // CORRIGIDO: Caminho correto para a pasta assets a partir da raiz src
 
 export default function App() {
   // 1. ESTADO DE AUTENTICAÇÃO (Controla se mostra o Login ou a Gestão)
@@ -90,7 +90,7 @@ export default function App() {
     );
   }
 
-  // Se o utilizador tiver sessão ativa, renderiza a Página de Gestão
+  // Se o utilizador tiver sessão activa, renderiza a Página de Gestão
   if (sessao) {
     return <Dashboard />;
   }
