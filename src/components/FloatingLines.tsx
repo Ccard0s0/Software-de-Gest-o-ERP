@@ -45,7 +45,7 @@ uniform vec3 lineGradient[8];
 uniform int lineGradientCount;
 
 const vec3 BLACK = vec3(0.0);
-const vec3 BLUE_BRIGHT = vec3(0.0, 150.0, 255.0) / 255.0; // TROCADO DE ROSA PARA AZUL
+const vec3 BLUE_BRIGHT = vec3(0.0, 150.0, 255.0) / 255.0;
 const vec3 BLUE  = vec3(47.0,  75.0, 162.0) / 255.0;
 
 mat2 rotate(float r) {
@@ -57,7 +57,7 @@ vec3 background_color(vec2 uv) {
   float y = sin(uv.x - 0.2) * 0.3 - 0.1;
   float m = uv.y - y;
   col += mix(BLUE, BLACK, smoothstep(0.0, 1.0, abs(m)));
-  col += mix(BLUE_BRIGHT, BLACK, smoothstep(0.0, 1.0, abs(m - 0.8))); // APLICADO O AZUL AQUI
+  col += mix(BLUE_BRIGHT, BLACK, smoothstep(0.0, 1.0, abs(m - 0.8)));
   return col * 0.5;
 }
 
@@ -81,7 +81,7 @@ float wave(vec2 uv, float offset, vec2 screenUv, vec2 mouseUv, bool shouldBend) 
   float time = iTime * animationSpeed;
   float x_offset   = offset;
   float x_movement = time * 0.1;
-  float amp        = sin(offset + time * 0.2) * 0.3;
+  float amp          = sin(offset + time * 0.2) * 0.3;
   float y          = sin(uv.x + x_offset + x_movement) * amp;
 
   if (shouldBend) {
@@ -176,12 +176,10 @@ void main() {
 
 const MAX_GRADIENT_STOPS = 8;
 
-function hexToVec3(hex) {
+function hexToVec3(hex: string): THREE.Vector3 {
   let value = hex.trim();
   if (value.startsWith("#")) value = value.slice(1);
-  let r = 255,
-    g = 255,
-    b = 255;
+  let r = 255, g = 255, b = 255;
   if (value.length === 3) {
     r = parseInt(value[0] + value[0], 16);
     g = parseInt(value[1] + value[1], 16);
@@ -192,6 +190,58 @@ function hexToVec3(hex) {
     b = parseInt(value.slice(4, 6), 16);
   }
   return new THREE.Vector3(r / 255, g / 255, b / 255);
+}
+
+export interface WavePosition {
+  x: number;
+  y: number;
+  rotate: number;
+}
+
+export interface FloatingLinesProps {
+  linesGradient?: string[];
+  enabledWaves?: Array<"top" | "middle" | "bottom">;
+  lineCount?: number | number[];
+  lineDistance?: number | number[];
+  topWavePosition?: Partial<WavePosition>;
+  middleWavePosition?: Partial<WavePosition>;
+  bottomWavePosition?: Partial<WavePosition>;
+  animationSpeed?: number;
+  interactive?: boolean;
+  bendRadius?: number;
+  bendStrength?: number;
+  mouseDamping?: number;
+  parallax?: boolean;
+  parallaxStrength?: number;
+  mixBlendMode?: React.CSSProperties["mixBlendMode"];
+}
+
+interface CustomUniforms {
+  iTime: THREE.IUniform<number>;
+  iResolution: THREE.IUniform<THREE.Vector3>;
+  animationSpeed: THREE.IUniform<number>;
+  enableTop: THREE.IUniform<boolean>;
+  enableMiddle: THREE.IUniform<boolean>;
+  enableBottom: THREE.IUniform<boolean>;
+  topLineCount: THREE.IUniform<number>;
+  middleLineCount: THREE.IUniform<number>;
+  bottomLineCount: THREE.IUniform<number>;
+  topLineDistance: THREE.IUniform<number>;
+  middleLineDistance: THREE.IUniform<number>;
+  bottomLineDistance: THREE.IUniform<number>;
+  topWavePosition: THREE.IUniform<THREE.Vector3>;
+  middleWavePosition: THREE.IUniform<THREE.Vector3>;
+  bottomWavePosition: THREE.IUniform<THREE.Vector3>;
+  iMouse: THREE.IUniform<THREE.Vector2>;
+  interactive: THREE.IUniform<boolean>;
+  bendRadius: THREE.IUniform<number>;
+  bendStrength: THREE.IUniform<number>;
+  bendInfluence: THREE.IUniform<number>;
+  parallax: THREE.IUniform<boolean>;
+  parallaxStrength: THREE.IUniform<number>;
+  parallaxOffset: THREE.IUniform<THREE.Vector2>;
+  lineGradient: THREE.IUniform<THREE.Vector3[]>;
+  lineGradientCount: THREE.IUniform<number>;
 }
 
 export default function FloatingLines({
@@ -210,23 +260,23 @@ export default function FloatingLines({
   parallax = true,
   parallaxStrength = 0.2,
   mixBlendMode = "screen",
-}) {
-  const containerRef = useRef(null);
-  const targetMouseRef = useRef(new THREE.Vector2(-1000, -1000));
-  const currentMouseRef = useRef(new THREE.Vector2(-1000, -1000));
-  const targetInfluenceRef = useRef(0);
-  const currentInfluenceRef = useRef(0);
-  const targetParallaxRef = useRef(new THREE.Vector2(0, 0));
-  const currentParallaxRef = useRef(new THREE.Vector2(0, 0));
+}: FloatingLinesProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const targetMouseRef = useRef<THREE.Vector2>(new THREE.Vector2(-1000, -1000));
+  const currentMouseRef = useRef<THREE.Vector2>(new THREE.Vector2(-1000, -1000));
+  const targetInfluenceRef = useRef<number>(0);
+  const currentInfluenceRef = useRef<number>(0);
+  const targetParallaxRef = useRef<THREE.Vector2>(new THREE.Vector2(0, 0));
+  const currentParallaxRef = useRef<THREE.Vector2>(new THREE.Vector2(0, 0));
 
-  const getLineCount = (waveType) => {
+  const getLineCount = (waveType: "top" | "middle" | "bottom"): number => {
     if (typeof lineCount === "number") return lineCount;
     if (!enabledWaves.includes(waveType)) return 0;
     const index = enabledWaves.indexOf(waveType);
     return lineCount[index] ?? 8;
   };
 
-  const getLineDistance = (waveType) => {
+  const getLineDistance = (waveType: "top" | "middle" | "bottom"): number => {
     if (typeof lineDistance === "number") return lineDistance;
     if (!enabledWaves.includes(waveType)) return 0.1;
     const index = enabledWaves.indexOf(waveType);
@@ -234,22 +284,12 @@ export default function FloatingLines({
   };
 
   const topLineCount = enabledWaves.includes("top") ? getLineCount("top") : 0;
-  const middleLineCount = enabledWaves.includes("middle")
-    ? getLineCount("middle")
-    : 0;
-  const bottomLineCount = enabledWaves.includes("bottom")
-    ? getLineCount("bottom")
-    : 0;
+  const middleLineCount = enabledWaves.includes("middle") ? getLineCount("middle") : 0;
+  const bottomLineCount = enabledWaves.includes("bottom") ? getLineCount("bottom") : 0;
 
-  const topLineDistance = enabledWaves.includes("top")
-    ? getLineDistance("top") * 0.01
-    : 0.01;
-  const middleLineDistance = enabledWaves.includes("middle")
-    ? getLineDistance("middle") * 0.01
-    : 0.01;
-  const bottomLineDistance = enabledWaves.includes("bottom")
-    ? getLineDistance("bottom") * 0.01
-    : 0.01;
+  const topLineDistance = enabledWaves.includes("top") ? getLineDistance("top") * 0.01 : 0.01;
+  const middleLineDistance = enabledWaves.includes("middle") ? getLineDistance("middle") * 0.01 : 0.01;
+  const bottomLineDistance = enabledWaves.includes("bottom") ? getLineDistance("bottom") * 0.01 : 0.01;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -273,7 +313,7 @@ export default function FloatingLines({
     }
     container.appendChild(canvas);
 
-    const uniforms = {
+    const uniforms: CustomUniforms = {
       iTime: { value: 0 },
       iResolution: { value: new THREE.Vector3(1, 1, 1) },
       animationSpeed: { value: animationSpeed },
@@ -334,7 +374,7 @@ export default function FloatingLines({
     }
 
     const material = new THREE.ShaderMaterial({
-      uniforms,
+      uniforms: uniforms as unknown as Record<string, THREE.IUniform>,
       vertexShader,
       fragmentShader,
     });
@@ -355,7 +395,7 @@ export default function FloatingLines({
     setSize();
     window.addEventListener("resize", setSize);
 
-    const handlePointerMove = (event) => {
+    const handlePointerMove = (event: PointerEvent) => {
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
       const x = event.clientX - rect.left;
