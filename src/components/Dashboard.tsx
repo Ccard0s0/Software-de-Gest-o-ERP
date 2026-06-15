@@ -54,40 +54,51 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ user, onSignOut }: DashboardProps) {
-  const [brands, setBrands] = useState<Brand[]>([
-    {
-      id: "nomad",
-      name: "Nomad Engenuity",
-      slug: "nomad",
-      type: "empresa",
-      color: "#cd1eb9",
-      folders: ["Logos", "Vídeos"],
-    },
-    {
-      id: "factor",
-      name: "Factor.AI",
-      slug: "factor-ai",
-      type: "marca",
-      color: "#E9644A",
-      folders: ["Logos", "Vídeos"],
-    },
-    {
-      id: "sinfon",
-      name: "Sinfon.IA",
-      slug: "sinfon-ia",
-      type: "marca",
-      color: "#3b82f6",
-      folders: ["Logos", "Vídeos"],
-    },
-    {
-      id: "communities",
-      name: "Communities",
-      slug: "communities",
-      type: "empresa",
-      color: "#5bbfeb",
-      folders: ["Logos", "Vídeos"],
-    },
-  ]);
+  // Inicialização inteligente com localStorage para reter novas empresas e pastas
+  const [brands, setBrands] = useState<Brand[]>(() => {
+    const dadosGuardados = localStorage.getItem("eugeen_brands");
+    if (dadosGuardados) {
+      try {
+        return JSON.parse(dadosGuardados);
+      } catch (e) {
+        console.error("Erro ao carregar marcas do localStorage", e);
+      }
+    }
+    return [
+      {
+        id: "nomad",
+        name: "Nomad Engenuity",
+        slug: "nomad",
+        type: "empresa",
+        color: "#cd1eb9",
+        folders: ["Logos", "Vídeos"],
+      },
+      {
+        id: "factor",
+        name: "Factor.AI",
+        slug: "factor-ai",
+        type: "marca",
+        color: "#E9644A",
+        folders: ["Logos", "Vídeos"],
+      },
+      {
+        id: "sinfon",
+        name: "Sinfon.IA",
+        slug: "sinfon-ia",
+        type: "marca",
+        color: "#3b82f6",
+        folders: ["Logos", "Vídeos"],
+      },
+      {
+        id: "communities",
+        name: "Communities",
+        slug: "communities",
+        type: "empresa",
+        color: "#5bbfeb",
+        folders: ["Logos", "Vídeos"],
+      },
+    ];
+  });
 
   const [files, setFiles] = useState<FileItem[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -104,6 +115,11 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
   const currentFiles = files.filter(
     (f) => f.brandId === selectedBrandId && f.folderName === selectedFolderName,
   );
+
+  // Efeito automático para gravar qualquer alteração nas marcas/empresas/pastas
+  useEffect(() => {
+    localStorage.setItem("eugeen_brands", JSON.stringify(brands));
+  }, [brands]);
 
   const handleAddNewEntity = async (type: "empresa" | "marca") => {
     const titleText = type === "empresa" ? "Nova Empresa" : "Nova Marca";
@@ -160,7 +176,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
 
     Swal.fire({
       title: "Adicionado!",
-      text: `A estrutura para "${entityName.trim()}" foi criada com sucesso localmente.`,
+      text: `A estrutura para "${entityName.trim()}" foi criada com sucesso.`,
       icon: "success",
       confirmButtonColor: "#6366F1",
       background: "#1E293B",
@@ -845,6 +861,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
 
       {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col h-full overflow-hidden bg-gradient-to-b from-[#0e0c24] to-[#06050f]">
+        {/* VISTA 1: HUB GLOBAL */}
         {currentView === "hub" && (
           <div className="flex flex-col h-full w-full overflow-y-auto">
             <header className="h-20 border-b border-white/5 px-8 flex items-center justify-between shrink-0 bg-black/10 backdrop-blur-sm">
@@ -946,217 +963,199 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
                 </div>
               </div>
 
-              {/* ACTIVIDADE RECENTE - GLASSMORPHISM */}
-              <div className="p-6 rounded-2xl border border-white/5 bg-[#121026]/20 backdrop-blur-md shadow-xl">
-                <h2 className="text-lg font-black text-white mb-4 flex items-center gap-2">
-                  <span>⏱️</span> Atividade Recente
+              {/* ATIVIDADES RECENTES */}
+              <div className="p-6 rounded-2xl border border-white/5 bg-[#121026]/30 backdrop-blur-md shadow-xl">
+                <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <span>⏱️</span> Atividades Recentes do Servidor
                 </h2>
-                <div className="divide-y divide-white/5">
-                  {activities.length === 0 ? (
-                    <p className="text-sm text-slate-500 py-4">
-                      Nenhuma atividade registada até ao momento.
-                    </p>
-                  ) : (
-                    activities.map((act) => (
-                      <div
-                        key={act.id}
-                        className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm"
-                      >
-                        <div className="text-slate-300">
-                          <span className="font-bold text-indigo-400">
-                            {act.user}
-                          </span>{" "}
-                          {act.action === "eliminou" ? (
-                            <span className="text-rose-400 font-medium">
-                              eliminou
-                            </span>
-                          ) : act.action === "eliminou_pasta" ? (
-                            <span className="text-rose-400 font-medium">
-                              eliminou a pasta
-                            </span>
-                          ) : (
-                            <span className="text-emerald-400 font-medium">
-                              adicionou
-                            </span>
-                          )}{" "}
-                          <span className="font-semibold text-white">
-                            {act.fileName || act.folderName}
-                          </span>{" "}
-                          em{" "}
-                          <span className="text-slate-400">
-                            /{act.folderName || ""}
-                          </span>{" "}
-                          dentro de{" "}
-                          <span className="px-2 py-0.5 rounded bg-white/5 text-xs font-medium text-slate-300">
-                            {act.brandName}
-                          </span>
-                        </div>
-                        <div className="text-xs text-slate-500 shrink-0">
-                          {act.time}
-                        </div>
-                      </div>
-                    ))
-                  )}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm text-slate-400">
+                    <thead className="text-xs uppercase bg-white/5 text-slate-300 rounded-lg">
+                      <tr>
+                        <th className="p-3 rounded-l-xl">Utilizador</th>
+                        <th className="p-3">Ação</th>
+                        <th className="p-3">Alvo</th>
+                        <th className="p-3">Localização</th>
+                        <th className="p-3 rounded-r-xl">Data / Hora</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {activities.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="p-4 text-center text-xs text-slate-500">
+                            Nenhuma atividade registada recentemente.
+                          </td>
+                        </tr>
+                      ) : (
+                        activities.map((act) => (
+                          <tr key={act.id} className="hover:bg-white/[0.02] transition-colors">
+                            <td className="p-3 font-semibold text-slate-200">{act.user}</td>
+                            <td className="p-3">
+                              <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${act.action === "adicionou" ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
+                                {act.action.toUpperCase()}
+                              </span>
+                            </td>
+                            <td className="p-3 truncate max-w-[200px]" title={act.fileName || act.folderName}>
+                              {act.fileName || act.folderName}
+                            </td>
+                            <td className="p-3 text-xs">
+                              <span className="text-indigo-400 font-medium">{act.brandName}</span>
+                              {act.folderName && <span className="text-slate-500"> / {act.folderName}</span>}
+                            </td>
+                            <td className="p-3 text-xs text-slate-500">{act.time}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* CÓDIGO DA BRAND VIEW (MANTIDO E ADAPTADO PARA MODO ESCURO FIXO) */}
+        {/* VISTA 2: DETALHE DA MARCA / EMPRESA */}
         {currentView === "brand-view" && activeBrand && (
-          <div className="flex flex-col h-full w-full">
+          <div className="flex flex-col h-full w-full overflow-hidden">
             <header className="h-20 border-b border-white/5 px-8 flex items-center justify-between shrink-0 bg-black/10 backdrop-blur-sm">
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => setCurrentView("hub")}
-                  className="px-3 py-1.5 rounded-xl bg-white/5 text-slate-300 hover:bg-white/10 text-xs font-bold transition-all"
+                  className="bg-white/5 hover:bg-white/10 text-slate-300 text-xs px-3 py-2 rounded-xl border border-white/5 font-bold transition-all"
                 >
-                  ⬅ Voltar ao Hub
+                  ⬅ Voltar
                 </button>
-                <div className="flex items-center gap-3">
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{
-                      backgroundColor: activeBrand.color,
-                      boxShadow: `0 0 10px ${activeBrand.color}`,
-                    }}
-                  ></span>
-                  <h1 className="text-xl font-black text-white">
+                <div>
+                  <h1 className="text-xl font-black text-white flex items-center gap-3">
+                    <span
+                      className="w-3 h-3 rounded-full inline-block"
+                      style={{
+                        backgroundColor: activeBrand.color,
+                        boxShadow: `0 0 10px ${activeBrand.color}`,
+                      }}
+                    ></span>
                     {activeBrand.name}
                   </h1>
                 </div>
               </div>
-              <button
-                onClick={handleAddFolder}
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white text-xs font-bold rounded-xl shadow-md transition-all"
-              >
-                ＋ Criar Nova Pasta
-              </button>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleAddFolder}
+                  className="bg-white/5 hover:bg-white/10 text-slate-200 text-xs px-4 py-2 rounded-xl border border-white/5 font-bold transition-all"
+                >
+                  📂 Nova Pasta
+                </button>
+                <button
+                  onClick={triggerFileSelection}
+                  disabled={!selectedFolderName}
+                  className={`text-xs px-4 py-2 rounded-xl font-bold transition-all shadow-lg text-white ${!selectedFolderName ? "bg-slate-700 opacity-40 cursor-not-allowed" : "bg-gradient-to-r from-purple-600 to-indigo-600 shadow-indigo-600/20 hover:opacity-90"}`}
+                >
+                  🚀 Carregar Arquivo
+                </button>
+              </div>
             </header>
 
-            <div className="flex-1 flex overflow-hidden">
-              {/* LISTA DE PASTAS INTERNAS */}
-              <div className="w-64 border-r border-white/5 bg-black/10 flex flex-col p-4 gap-1 overflow-y-auto">
-                <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
-                  Pastas Disponíveis
-                </p>
-                {activeBrand.folders.map((pasta) => (
-                  <div
-                    key={pasta}
-                    onClick={() => setSelectedFolderName(pasta)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all ${selectedFolderName === pasta ? "bg-white/5 text-white font-bold border border-white/10" : "text-slate-400 hover:bg-white/5 hover:text-slate-200"}`}
+            {/* SELECÇÃO DE PASTAS INTERNAS */}
+            <div className="px-8 py-4 border-b border-white/5 bg-black/5 flex items-center gap-2 overflow-x-auto shrink-0">
+              {activeBrand.folders.map((folder) => (
+                <div
+                  key={folder}
+                  onClick={() => setSelectedFolderName(folder)}
+                  className={`flex items-center gap-3 px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer select-none whitespace-nowrap shrink-0 ${selectedFolderName === folder ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-400" : "bg-transparent border-white/5 text-slate-400 hover:bg-white/5"}`}
+                >
+                  <span>📁 {folder}</span>
+                  <button
+                    onClick={(e) => handleEliminarFolder(e, folder)}
+                    className="text-slate-500 hover:text-rose-400 font-normal transition-colors text-[10px] pl-1"
+                    title="Eliminar esta pasta"
                   >
-                    <span className="truncate">📁 {pasta}</span>
-                    <button
-                      onClick={(e) => handleEliminarFolder(e, pasta)}
-                      className="text-xs text-slate-500 hover:text-rose-400 p-1 opacity-0 hover:opacity-100 transition-opacity"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                ))}
-              </div>
+                    ✕
+                  </button>
+                </div>
+              ))}
+              {activeBrand.folders.length === 0 && (
+                <p className="text-xs text-slate-500 italic py-1">
+                  Nenhuma pasta criada. Clique em "Nova Pasta" para começar.
+                </p>
+              )}
+            </div>
 
-              {/* LISTA DE ARQUIVOS */}
-              <div className="flex-1 p-8 overflow-y-auto flex flex-col">
-                {selectedFolderName ? (
-                  <div className="flex-1 flex flex-col">
-                    <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-6">
-                      <div>
-                        <h2 className="text-lg font-black text-white">
-                          Conteúdo de:{" "}
-                          <span className="text-indigo-400">
-                            /{selectedFolderName}
-                          </span>
-                        </h2>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          {currentFiles.length} ficheiros guardados em nuvem.
-                        </p>
-                      </div>
+            {/* LISTAGEM DE ARQUIVOS NA PASTA */}
+            <div className="flex-1 p-8 overflow-y-auto">
+              {loadingFiles ? (
+                <div className="h-40 flex items-center justify-center text-sm text-slate-400 italic">
+                  A carregar arquivos do servidor...
+                </div>
+              ) : currentFiles.length === 0 ? (
+                <div className="border border-dashed border-white/10 rounded-2xl p-16 flex flex-col items-center justify-center text-center max-w-xl mx-auto mt-12 bg-[#121026]/10">
+                  <div className="text-4xl mb-4">☁️</div>
+                  <h3 className="text-sm font-bold text-slate-200">Esta pasta está vazia</h3>
+                  <p className="text-xs text-slate-500 mt-1 max-w-xs">
+                    Arraste arquivos ou clique no botão de upload no canto superior para guardar novos documentos digitais aqui.
+                  </p>
+                  <button
+                    onClick={triggerFileSelection}
+                    disabled={!selectedFolderName}
+                    className="mt-5 text-xs font-bold text-indigo-400 bg-indigo-500/5 hover:bg-indigo-500/10 px-4 py-2 rounded-xl border border-indigo-500/20 transition-all"
+                  >
+                    Selecionar Arquivo
+                  </button>
+                </div>
+              ) : (
+                <div className="bg-[#121026]/20 border border-white/5 rounded-2xl overflow-hidden shadow-xl">
+                  <table className="w-full text-left text-sm text-slate-300">
+                    <thead className="bg-white/5 text-xs uppercase text-slate-400 font-bold">
+                      <tr>
+                        <th className="p-4">Nome do Arquivo</th>
+                        <th className="p-4">Tamanho</th>
+                        <th className="p-4">Adicionado em</th>
+                        <th className="p-4 text-right rounded-r-xl">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {currentFiles.map((file) => {
+                        const fileDate = file.createdAt ? new Date(file.createdAt) : new Date();
+                        const displayDate = fileDate.toLocaleDateString("pt-PT") + " às " + fileDate.toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" });
 
-                      <button
-                        onClick={triggerFileSelection}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-600/10 transition-all flex items-center gap-2"
-                      >
-                        📤 Carregar Arquivo
-                      </button>
-                    </div>
-
-                    {loadingFiles ? (
-                      <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">
-                        A atualizar lista de arquivos...
-                      </div>
-                    ) : currentFiles.length === 0 ? (
-                      <div className="flex-1 border-2 border-dashed border-white/5 rounded-2xl flex flex-col items-center justify-center p-8 text-center bg-black/5">
-                        <span className="text-3xl mb-2">📦</span>
-                        <p className="text-sm text-slate-400 font-semibold">
-                          Esta pasta está vazia
-                        </p>
-                        <p className="text-xs text-slate-600 mt-1">
-                          Carrega o teu primeiro documento ou elemento
-                          multimédia aqui em cima.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                        {currentFiles.map((file) => (
-                          <div
-                            key={file.id}
-                            className="p-4 rounded-xl border border-white/5 bg-[#121026]/20 hover:bg-[#121026]/40 transition-all flex flex-col justify-between group"
-                          >
-                            <div className="flex items-start gap-3">
-                              <span className="text-2xl mt-1 shrink-0">📄</span>
-                              <div className="truncate flex-1">
-                                <h4
-                                  className="text-sm font-bold text-white truncate"
-                                  title={file.fileName}
-                                >
-                                  {file.fileName}
-                                </h4>
-                                <p className="text-[11px] text-slate-500 mt-0.5">
-                                  {file.size}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-white/5">
+                        return (
+                          <tr key={file.id} className="hover:bg-white/[0.01] transition-all group">
+                            <td className="p-4 font-medium text-white truncate max-w-[300px]">
                               <a
                                 href={file.fileUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] font-bold text-slate-300 transition-all"
+                                className="hover:text-indigo-400 hover:underline transition-colors flex items-center gap-2.5"
                               >
-                                🔗 Abrir
+                                📄 <span className="truncate">{file.fileName}</span>
                               </a>
-                              <button
-                                onClick={() => handleMoverFile(file.id)}
-                                className="px-2.5 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-[11px] font-bold text-indigo-400 transition-all"
-                              >
-                                📦 Mover
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleEliminarFile(file.id, file.fileName)
-                                }
-                                className="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-[11px] font-bold text-rose-400 transition-all"
-                              >
-                                🗑️ Apagar
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center text-slate-500">
-                    <p className="text-sm font-medium">
-                      Por favor, seleciona ou cria uma pasta na barra lateral.
-                    </p>
-                  </div>
-                )}
-              </div>
+                            </td>
+                            <td className="p-4 text-xs text-slate-400">{file.size}</td>
+                            <td className="p-4 text-xs text-slate-500">{displayDate}</td>
+                            <td className="p-4 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <button
+                                  onClick={() => handleMoverFile(file.id)}
+                                  className="bg-white/5 hover:bg-indigo-500/20 border border-white/5 hover:border-indigo-500/30 text-slate-300 hover:text-indigo-400 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                                  title="Mover ficheiro de diretório"
+                                >
+                                  📦 Mover
+                                </button>
+                                <button
+                                  onClick={() => handleEliminarFile(file.id, file.fileName)}
+                                  className="bg-white/5 hover:bg-rose-500/20 border border-white/5 hover:border-rose-500/30 text-slate-400 hover:text-rose-400 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                                >
+                                  🗑️ Apagar
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         )}
