@@ -9,7 +9,9 @@ import Swal from "sweetalert2";
 
 // @ts-ignore
 import { supabase } from "../supabaseClient";
+import BackgroundWaves from "./BackgroundWaves";
 
+// Mapa de IDs estáticos conhecidos na Base de Dados
 const BRAND_UUID_MAP: Record<string, string> = {
   nomad: "236cfb9a-2ac-48de-bcbd-1f651ef4664e",
   communities: "56f31452-acc2-467f-b914-d9587672c373",
@@ -54,7 +56,6 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ user, onSignOut }: DashboardProps) {
-  // Inicialização inteligente com localStorage para reter novas empresas e pastas
   const [brands, setBrands] = useState<Brand[]>(() => {
     const dadosGuardados = localStorage.getItem("eugeen_brands");
     if (dadosGuardados) {
@@ -77,7 +78,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
         id: "factor",
         name: "Factor.AI",
         slug: "factor-ai",
-        type: "marca",
+        type: "empresa",
         color: "#E9644A",
         folders: ["Logos", "Vídeos"],
       },
@@ -116,7 +117,18 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
     (f) => f.brandId === selectedBrandId && f.folderName === selectedFolderName,
   );
 
-  // Efeito automático para gravar qualquer alteração nas marcas/empresas/pastas
+  // Função auxiliar para garantir que extraímos o UUID correto, seja estático ou dinâmico
+  const getTargetUuid = (id: string): string => {
+    // Se o ID for uma variação do factor criado localmente
+    if (id.startsWith("factor")) return BRAND_UUID_MAP["factor"];
+    if (id.startsWith("nomad")) return BRAND_UUID_MAP["nomad"];
+    if (id.startsWith("communities")) return BRAND_UUID_MAP["communities"];
+    if (id.startsWith("sinfon")) return BRAND_UUID_MAP["sinfon"];
+    
+    // Se for um item totalmente novo já criado com UUID válido pelo randomUUID, retorna o próprio ID
+    return BRAND_UUID_MAP[id] || id;
+  };
+
   useEffect(() => {
     localStorage.setItem("eugeen_brands", JSON.stringify(brands));
   }, [brands]);
@@ -150,7 +162,10 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
       .trim()
       .toLowerCase()
       .replace(/[^a-z0-9]/g, "-");
-    const generatedId = slug + "_" + Date.now();
+    
+    const generatedUuid = crypto.randomUUID 
+      ? crypto.randomUUID() 
+      : "00000000-0000-4000-a000-" + Date.now().toString().padEnd(12, "0").slice(0, 12);
 
     const randomColors = [
       "#ec4899",
@@ -164,7 +179,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
       randomColors[Math.floor(Math.random() * randomColors.length)];
 
     const newEntity: Brand = {
-      id: generatedId,
+      id: generatedUuid,
       name: entityName.trim(),
       slug: slug,
       type: type,
@@ -176,7 +191,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
 
     Swal.fire({
       title: "Adicionado!",
-      text: `A estrutura para "${entityName.trim()}" foi criada com sucesso.`,
+      text: `A estrutura para "${entityName.trim()}" foi criada com sucesso com UUID válido.`,
       icon: "success",
       confirmButtonColor: "#6366F1",
       background: "#1E293B",
@@ -231,11 +246,17 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
         if (error) throw error;
 
         const getFrontendBrandId = (dbUuid: string): string => {
-          return (
-            Object.keys(BRAND_UUID_MAP).find(
-              (key) => BRAND_UUID_MAP[key] === dbUuid,
-            ) || dbUuid
+          // Verifica se o UUID da BD corresponde a alguma das nossas chaves estáticas
+          const staticKey = Object.keys(BRAND_UUID_MAP).find(
+            (key) => BRAND_UUID_MAP[key] === dbUuid
           );
+          if (staticKey) {
+            // Se encontrarmos a chave estática (ex: 'factor'), procuramos se no estado atual
+            // existe um ID correspondente a essa marca (pode ser 'factor' ou o ID do localStorage)
+            const match = brands.find(b => b.id === staticKey || b.id.startsWith(staticKey));
+            return match ? match.id : staticKey;
+          }
+          return dbUuid;
         };
 
         const maps: FileItem[] = (data || []).map((f: any) => {
@@ -335,12 +356,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
 
     try {
       if (!selectedBrandId) return;
-      const targetUuid = BRAND_UUID_MAP[selectedBrandId];
-      if (!targetUuid) {
-        throw new Error(
-          `Não foi encontrado um UUID configurado para a correspondente a: "${selectedBrandId}"`,
-        );
-      }
+      const targetUuid = getTargetUuid(selectedBrandId);
 
       const filesInFolder = files.filter(
         (f) => f.brandId === selectedBrandId && f.folderName === folderName,
@@ -512,7 +528,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
       title: "Selecionar Pasta",
       text: `Escolha a pasta de destino dentro de: ${alvo.name}`,
       input: "select",
-      inputOptions: opcoesPastas,
+      inputOptions: opcoesPastas, // Correção do erro de compilação aqui (de optionsPastas para opcoesPastas)
       inputPlaceholder: "Escolha a pasta...",
       showCancelButton: true,
       confirmButtonText: "Confirmar e Mover",
@@ -526,12 +542,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
     if (!novaPastaDestino) return;
 
     try {
-      const targetUuid = BRAND_UUID_MAP[destinoId];
-      if (!targetUuid) {
-        throw new Error(
-          `Não foi encontrado mapeamento UUID para o destino: "${destinoId}"`,
-        );
-      }
+      const targetUuid = getTargetUuid(destinoId);
 
       const { error } = await supabase
         .from("files")
@@ -547,8 +558,8 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
         prev.map((f) =>
           f.id === fileId
             ? { ...f, brandId: destinoId, folderName: novaPastaDestino }
-            : f,
-        ),
+            : f
+        )
       );
 
       Swal.fire({
@@ -600,7 +611,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
         .upload(storagePath, uploadedFile, {
           upsert: true,
           cacheControl: "3600",
-        });
+         });
 
       if (storageError) throw storageError;
 
@@ -615,12 +626,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
           : `${(uploadedFile.size / 1024).toFixed(0)} KB`;
 
       if (!selectedBrandId) return;
-      const targetUuid = BRAND_UUID_MAP[selectedBrandId];
-      if (!targetUuid) {
-        throw new Error(
-          `Não foi possível realizar o upload. UUID não configurado para: "${selectedBrandId}"`,
-        );
-      }
+      const targetUuid = getTargetUuid(selectedBrandId);
 
       const { data: dbData, error: dbError } = await supabase
         .from("files")
@@ -729,7 +735,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
         className="hidden"
       />
 
-      {/* SIDEBAR - GLASSMORPHISM */}
+      {/* SIDEBAR */}
       <aside className="w-66 min-w-[260px] flex flex-col justify-between border-r border-white/5 bg-[#0d0b1f]/60 backdrop-blur-xl shadow-xl z-20">
         <div>
           <div className="p-6 border-b border-white/5 flex items-center justify-between">
@@ -860,10 +866,12 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden bg-gradient-to-b from-[#0e0c24] to-[#06050f]">
+      <main className="flex-1 flex flex-col h-full overflow-hidden bg-gradient-to-b from-[#0e0c24] to-[#06050f] relative">
+        <BackgroundWaves />
+
         {/* VISTA 1: HUB GLOBAL */}
         {currentView === "hub" && (
-          <div className="flex flex-col h-full w-full overflow-y-auto">
+          <div className="flex flex-col h-full w-full overflow-y-auto relative z-10">
             <header className="h-20 border-b border-white/5 px-8 flex items-center justify-between shrink-0 bg-black/10 backdrop-blur-sm">
               <div>
                 <h1 className="text-2xl font-black tracking-tight text-white">
@@ -911,7 +919,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
                   </div>
                 </div>
 
-                {/* CARTÕES DAS EMPRESAS COM EFEITO GLOW DINÂMICO */}
+                {/* CARTÕES DAS EMPRESAS */}
                 <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {brands.map((b) => {
                     const count = files.filter(
@@ -944,18 +952,9 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
                             </div>
                           </div>
                           <div
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
-                            style={{
-                              backgroundColor: `${b.color}15`,
-                              color: b.color,
-                            }}
-                          >
-                            📂
-                          </div>
-                        </div>
-                        <div className="text-xs text-slate-500 mt-4 flex items-center gap-1.5">
-                          Ver arquivos organizados{" "}
-                          <span style={{ color: b.color }}>→</span>
+                            className="w-8 h-8 rounded-lg"
+                            style={{ backgroundColor: `${b.color}15`, color: b.color }}
+                          />
                         </div>
                       </div>
                     );
@@ -963,199 +962,165 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
                 </div>
               </div>
 
-              {/* ATIVIDADES RECENTES */}
-              <div className="p-6 rounded-2xl border border-white/5 bg-[#121026]/30 backdrop-blur-md shadow-xl">
-                <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                  <span>⏱️</span> Atividades Recentes do Servidor
+              {/* ATIVIDADE RECENTE */}
+              <div className="p-6 rounded-2xl border border-white/5 bg-[#121026]/20 backdrop-blur-md shadow-xl">
+                <h2 className="text-lg font-black text-white mb-4">
+                  Atividade Recente no Servidor
                 </h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm text-slate-400">
-                    <thead className="text-xs uppercase bg-white/5 text-slate-300 rounded-lg">
-                      <tr>
-                        <th className="p-3 rounded-l-xl">Utilizador</th>
-                        <th className="p-3">Ação</th>
-                        <th className="p-3">Alvo</th>
-                        <th className="p-3">Localização</th>
-                        <th className="p-3 rounded-r-xl">Data / Hora</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {activities.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="p-4 text-center text-xs text-slate-500">
-                            Nenhuma atividade registada recentemente.
-                          </td>
-                        </tr>
-                      ) : (
-                        activities.map((act) => (
-                          <tr key={act.id} className="hover:bg-white/[0.02] transition-colors">
-                            <td className="p-3 font-semibold text-slate-200">{act.user}</td>
-                            <td className="p-3">
-                              <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${act.action === "adicionou" ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
-                                {act.action.toUpperCase()}
-                              </span>
-                            </td>
-                            <td className="p-3 truncate max-w-[200px]" title={act.fileName || act.folderName}>
-                              {act.fileName || act.folderName}
-                            </td>
-                            <td className="p-3 text-xs">
-                              <span className="text-indigo-400 font-medium">{act.brandName}</span>
-                              {act.folderName && <span className="text-slate-500"> / {act.folderName}</span>}
-                            </td>
-                            <td className="p-3 text-xs text-slate-500">{act.time}</td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                <div className="space-y-3">
+                  {activities.length === 0 ? (
+                    <p className="text-sm text-slate-500 italic">Nenhuma atividade recente detetada.</p>
+                  ) : (
+                    activities.map((act) => (
+                      <div key={act.id} className="flex items-center justify-between text-sm p-3 rounded-xl bg-white/5 border border-white/5 backdrop-blur-sm">
+                        <div>
+                          <span className="font-bold text-slate-300">{act.user}</span>{" "}
+                          <span className="text-slate-400">{act.action}</span>{" "}
+                          <span className="font-semibold text-indigo-400">{act.fileName || act.folderName}</span>{" "}
+                          <span className="text-slate-500">em {act.brandName}</span>
+                        </div>
+                        <span className="text-xs text-slate-500">{act.time}</span>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* VISTA 2: DETALHE DA MARCA / EMPRESA */}
+        {/* VISTA 2: PASTA ESPECÍFICA */}
         {currentView === "brand-view" && activeBrand && (
-          <div className="flex flex-col h-full w-full overflow-hidden">
-            <header className="h-20 border-b border-white/5 px-8 flex items-center justify-between shrink-0 bg-black/10 backdrop-blur-sm">
+          <div className="flex flex-col h-full w-full overflow-hidden relative z-10">
+            <header className="h-20 border-b border-white/5 px-8 flex items-center justify-between bg-black/10 shrink-0 backdrop-blur-sm">
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => setCurrentView("hub")}
-                  className="bg-white/5 hover:bg-white/10 text-slate-300 text-xs px-3 py-2 rounded-xl border border-white/5 font-bold transition-all"
+                  className="px-4 py-2 text-xs font-bold rounded-xl bg-white/5 border border-white/5 text-slate-300 hover:bg-white/10 transition-all cursor-pointer"
                 >
-                  ⬅ Voltar
+                  ⬅ Voltar ao Hub
                 </button>
-                <div>
-                  <h1 className="text-xl font-black text-white flex items-center gap-3">
-                    <span
-                      className="w-3 h-3 rounded-full inline-block"
-                      style={{
-                        backgroundColor: activeBrand.color,
-                        boxShadow: `0 0 10px ${activeBrand.color}`,
-                      }}
-                    ></span>
+                <div className="flex items-center gap-3">
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{
+                      backgroundColor: activeBrand.color,
+                      boxShadow: `0 0 10px ${activeBrand.color}`,
+                    }}
+                  ></span>
+                  <h1 className="text-xl font-black text-white tracking-tight">
                     {activeBrand.name}
                   </h1>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleAddFolder}
-                  className="bg-white/5 hover:bg-white/10 text-slate-200 text-xs px-4 py-2 rounded-xl border border-white/5 font-bold transition-all"
-                >
-                  📂 Nova Pasta
-                </button>
-                <button
-                  onClick={triggerFileSelection}
-                  disabled={!selectedFolderName}
-                  className={`text-xs px-4 py-2 rounded-xl font-bold transition-all shadow-lg text-white ${!selectedFolderName ? "bg-slate-700 opacity-40 cursor-not-allowed" : "bg-gradient-to-r from-purple-600 to-indigo-600 shadow-indigo-600/20 hover:opacity-90"}`}
-                >
-                  🚀 Carregar Arquivo
-                </button>
-              </div>
+              <button
+                onClick={triggerFileSelection}
+                className="px-5 py-2.5 text-xs font-bold rounded-xl text-white transition-all shadow-lg shadow-indigo-600/20 cursor-pointer"
+                style={{
+                  background: `linear-gradient(135deg, ${activeBrand.color}, #6366F1)`,
+                }}
+              >
+                📥 Carregar Arquivo
+              </button>
             </header>
 
-            {/* SELECÇÃO DE PASTAS INTERNAS */}
-            <div className="px-8 py-4 border-b border-white/5 bg-black/5 flex items-center gap-2 overflow-x-auto shrink-0">
-              {activeBrand.folders.map((folder) => (
-                <div
-                  key={folder}
-                  onClick={() => setSelectedFolderName(folder)}
-                  className={`flex items-center gap-3 px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer select-none whitespace-nowrap shrink-0 ${selectedFolderName === folder ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-400" : "bg-transparent border-white/5 text-slate-400 hover:bg-white/5"}`}
-                >
-                  <span>📁 {folder}</span>
-                  <button
-                    onClick={(e) => handleEliminarFolder(e, folder)}
-                    className="text-slate-500 hover:text-rose-400 font-normal transition-colors text-[10px] pl-1"
-                    title="Eliminar esta pasta"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-              {activeBrand.folders.length === 0 && (
-                <p className="text-xs text-slate-500 italic py-1">
-                  Nenhuma pasta criada. Clique em "Nova Pasta" para começar.
-                </p>
-              )}
-            </div>
-
-            {/* LISTAGEM DE ARQUIVOS NA PASTA */}
-            <div className="flex-1 p-8 overflow-y-auto">
-              {loadingFiles ? (
-                <div className="h-40 flex items-center justify-center text-sm text-slate-400 italic">
-                  A carregar arquivos do servidor...
-                </div>
-              ) : currentFiles.length === 0 ? (
-                <div className="border border-dashed border-white/10 rounded-2xl p-16 flex flex-col items-center justify-center text-center max-w-xl mx-auto mt-12 bg-[#121026]/10">
-                  <div className="text-4xl mb-4">☁️</div>
-                  <h3 className="text-sm font-bold text-slate-200">Esta pasta está vazia</h3>
-                  <p className="text-xs text-slate-500 mt-1 max-w-xs">
-                    Arraste arquivos ou clique no botão de upload no canto superior para guardar novos documentos digitais aqui.
+            <div className="flex-1 flex overflow-hidden">
+              {/* SUB-SIDEBAR DE PASTAS */}
+              <div className="w-56 border-r border-white/5 bg-black/10 p-4 space-y-4 flex flex-col justify-between shrink-0 backdrop-blur-md">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2">
+                    Pastas Internas
                   </p>
-                  <button
-                    onClick={triggerFileSelection}
-                    disabled={!selectedFolderName}
-                    className="mt-5 text-xs font-bold text-indigo-400 bg-indigo-500/5 hover:bg-indigo-500/10 px-4 py-2 rounded-xl border border-indigo-500/20 transition-all"
-                  >
-                    Selecionar Arquivo
-                  </button>
+                  {activeBrand.folders.map((folder) => (
+                    <div
+                      key={folder}
+                      onClick={() => setSelectedFolderName(folder)}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium cursor-pointer transition-all group/folder ${selectedFolderName === folder ? "bg-white/5 text-white font-bold border border-white/10" : "text-slate-400 hover:bg-white/5 hover:text-slate-200"}`}
+                    >
+                      <span className="truncate">📁 {folder}</span>
+                      <button
+                        onClick={(e) => handleEliminarFolder(e, folder)}
+                        className="opacity-0 group-hover/folder:opacity-100 text-slate-500 hover:text-rose-400 p-0.5 transition-opacity"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ) : (
-                <div className="bg-[#121026]/20 border border-white/5 rounded-2xl overflow-hidden shadow-xl">
-                  <table className="w-full text-left text-sm text-slate-300">
-                    <thead className="bg-white/5 text-xs uppercase text-slate-400 font-bold">
-                      <tr>
-                        <th className="p-4">Nome do Arquivo</th>
-                        <th className="p-4">Tamanho</th>
-                        <th className="p-4">Adicionado em</th>
-                        <th className="p-4 text-right rounded-r-xl">Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {currentFiles.map((file) => {
-                        const fileDate = file.createdAt ? new Date(file.createdAt) : new Date();
-                        const displayDate = fileDate.toLocaleDateString("pt-PT") + " às " + fileDate.toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" });
 
-                        return (
-                          <tr key={file.id} className="hover:bg-white/[0.01] transition-all group">
-                            <td className="p-4 font-medium text-white truncate max-w-[300px]">
-                              <a
-                                href={file.fileUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="hover:text-indigo-400 hover:underline transition-colors flex items-center gap-2.5"
-                              >
-                                📄 <span className="truncate">{file.fileName}</span>
-                              </a>
-                            </td>
-                            <td className="p-4 text-xs text-slate-400">{file.size}</td>
-                            <td className="p-4 text-xs text-slate-500">{displayDate}</td>
-                            <td className="p-4 text-right">
-                              <div className="flex items-center justify-end gap-2">
-                                <button
-                                  onClick={() => handleMoverFile(file.id)}
-                                  className="bg-white/5 hover:bg-indigo-500/20 border border-white/5 hover:border-indigo-500/30 text-slate-300 hover:text-indigo-400 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all"
-                                  title="Mover ficheiro de diretório"
-                                >
-                                  📦 Mover
-                                </button>
-                                <button
-                                  onClick={() => handleEliminarFile(file.id, file.fileName)}
-                                  className="bg-white/5 hover:bg-rose-500/20 border border-white/5 hover:border-rose-500/30 text-slate-400 hover:text-rose-400 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all"
-                                >
-                                  🗑️ Apagar
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                <button
+                  onClick={handleAddFolder}
+                  className="w-full py-2.5 text-center text-xs font-bold rounded-xl border border-dashed border-white/10 text-slate-400 hover:text-white hover:border-white/30 transition-all cursor-pointer"
+                >
+                  ＋ Criar Nova Pasta
+                </button>
+              </div>
+
+              {/* LISTAGEM DE ARQUIVOS */}
+              <div className="flex-1 p-8 overflow-y-auto">
+                <div className="mb-6 flex items-center justify-between">
+                  <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
+                    Ficheiros em /{selectedFolderName || "Nenhuma pasta selecionada"}
+                  </h2>
+                  <span className="text-xs text-slate-500 font-medium">
+                    {currentFiles.length} itens encontrados
+                  </span>
                 </div>
-              )}
+
+                {loadingFiles ? (
+                  <div className="text-center py-20 text-slate-500 text-sm">A carregar ficheiros...</div>
+                ) : currentFiles.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center border border-dashed border-white/5 rounded-2xl py-24 text-slate-500 text-sm bg-black/5 backdrop-blur-sm">
+                    <span className="text-3xl mb-2">📁</span>
+                    <span>Esta pasta está vazia. Carrega ficheiros para começar.</span>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {currentFiles.map((file) => (
+                      <div
+                        key={file.id}
+                        className="p-4 rounded-xl border border-white/5 bg-[#121026]/20 backdrop-blur-sm flex flex-col justify-between group/file hover:border-white/10 transition-colors"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-lg shrink-0">
+                            📄
+                          </div>
+                          <div className="truncate min-w-0 flex-1">
+                            <h4 className="text-xs font-bold text-slate-200 truncate" title={file.fileName}>
+                              {file.fileName}
+                            </h4>
+                            <p className="text-[11px] text-slate-500 mt-0.5">{file.size}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-white/5">
+                          <button
+                            onClick={() => handleMoverFile(file.id)}
+                            className="px-2.5 py-1.5 text-[11px] font-bold rounded-lg bg-white/5 border border-white/5 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/5 transition-all cursor-pointer"
+                          >
+                            📦 Mover
+                          </button>
+                          <a
+                            href={file.fileUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-2.5 py-1.5 text-[11px] font-bold rounded-lg bg-white/5 border border-white/5 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/5 transition-all cursor-pointer text-center"
+                          >
+                            🔗 Abrir
+                          </a>
+                          <button
+                            onClick={() => handleEliminarFile(file.id, file.fileName)}
+                            className="px-2.5 py-1.5 text-[11px] font-bold rounded-lg bg-white/5 border border-white/5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/5 transition-all cursor-pointer"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
