@@ -1392,74 +1392,126 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {currentFiles.map((file) => (
-                      <div
-                        key={file.id}
-                        className={`p-4 rounded-xl border backdrop-blur-sm flex flex-col justify-between group/file transition-all duration-300 ${
-                          lightMode
-                            ? "border-slate-200 bg-white shadow-sm hover:border-slate-300 hover:shadow-md"
-                            : "border-white/5 bg-[#121026]/20 hover:border-white/10"
-                        }`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div
-                            className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0 ${lightMode ? "bg-slate-50" : "bg-white/5"}`}
-                          >
-                            📄
-                          </div>
-                          <div className="truncate min-w-0 flex-1">
-                            <h4
-                              className={`text-xs font-bold truncate transition-colors ${lightMode ? "text-slate-700" : "text-slate-200"}`}
-                              title={file.fileName}
-                            >
-                              {file.fileName}
-                            </h4>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
-                              {file.size}
-                            </p>
-                          </div>
-                        </div>
+                    {currentFiles.map((file) => {
+                      // Validação de segurança para o TypeScript: impede erros de propriedades indefinidas
+                      if (!file || !file.id || !file.fileName) return null;
 
+                      // Função auxiliar para analisar a extensão e gerar o Preview/Ícone correto
+                      const renderFileIcon = () => {
+                        const extension =
+                          file.fileName.split(".").pop()?.toLowerCase() || "";
+                        const isImage = [
+                          "png",
+                          "jpg",
+                          "jpeg",
+                          "gif",
+                          "webp",
+                          "svg",
+                        ].includes(extension);
+
+                        if (isImage && file.fileUrl) {
+                          return (
+                            <img
+                              src={file.fileUrl}
+                              alt={file.fileName}
+                              className="w-full h-full object-cover rounded-lg"
+                              onError={(e) => {
+                                // Fallback caso o link da imagem quebre
+                                e.currentTarget.style.display = "none";
+                                if (e.currentTarget.parentElement) {
+                                  e.currentTarget.parentElement.innerText =
+                                    "🖼️";
+                                }
+                              }}
+                            />
+                          );
+                        }
+
+                        // Ícones costumizados para outros formatos comuns
+                        if (extension === "pdf") return "📕";
+                        if (["zip", "rar", "7z"].includes(extension))
+                          return "📦";
+                        if (["doc", "docx"].includes(extension)) return "📘";
+                        if (["xls", "xlsx", "csv"].includes(extension))
+                          return "🍏";
+
+                        return "📄"; // Fallback por defeito
+                      };
+
+                      return (
                         <div
-                          className={`flex items-center justify-end gap-2 mt-4 pt-3 border-t ${lightMode ? "border-slate-100" : "border-white/5"}`}
+                          key={file.id}
+                          className={`p-4 rounded-xl border backdrop-blur-sm flex flex-col justify-between group/file transition-all duration-300 ${
+                            lightMode
+                              ? "border-slate-200 bg-white shadow-sm hover:border-slate-300 hover:shadow-md"
+                              : "border-white/5 bg-[#121026]/20 hover:border-white/10"
+                          }`}
                         >
-                          <button
-                            onClick={() => handleMoverFile(file.id)}
-                            className={`px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
-                              lightMode
-                                ? "bg-slate-50 border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50"
-                                : "bg-white/5 border-white/5 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/5"
-                            }`}
+                          <div className="flex items-start gap-3">
+                            {/* Contentor do Ícone/Preview adaptado */}
+                            <div
+                              className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0 overflow-hidden ${
+                                lightMode
+                                  ? "bg-slate-50 border border-slate-100"
+                                  : "bg-white/5"
+                              }`}
+                            >
+                              {renderFileIcon()}
+                            </div>
+                            <div className="truncate min-w-0 flex-1">
+                              <h4
+                                className={`text-xs font-bold truncate transition-colors ${lightMode ? "text-slate-700" : "text-slate-200"}`}
+                                title={file.fileName}
+                              >
+                                {file.fileName}
+                              </h4>
+                              <p className="text-[11px] text-slate-500 mt-0.5">
+                                {file.size}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div
+                            className={`flex items-center justify-end gap-2 mt-4 pt-3 border-t ${lightMode ? "border-slate-100" : "border-white/5"}`}
                           >
-                            📦 Mover
-                          </button>
-                          <a
-                            href={file.fileUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className={`px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition-all text-center cursor-pointer ${
-                              lightMode
-                                ? "bg-slate-50 border-slate-200 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50"
-                                : "bg-white/5 border-white/5 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/5"
-                            }`}
-                          >
-                            🔗 Ver
-                          </a>
-                          <button
-                            onClick={() =>
-                              handleEliminarFile(file.id, file.fileName)
-                            }
-                            className={`px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
-                              lightMode
-                                ? "bg-slate-50 border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
-                                : "bg-white/5 border-white/5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/5"
-                            }`}
-                          >
-                            🗑️
-                          </button>
+                            <button
+                              onClick={() => handleMoverFile(file.id)}
+                              className={`px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
+                                lightMode
+                                  ? "bg-slate-50 border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50"
+                                  : "bg-white/5 border-white/5 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/5"
+                              }`}
+                            >
+                              📦 Mover
+                            </button>
+                            <a
+                              href={file.fileUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={`px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition-all text-center cursor-pointer ${
+                                lightMode
+                                  ? "bg-slate-50 border-slate-200 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50"
+                                  : "bg-white/5 border-white/5 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/5"
+                              }`}
+                            >
+                              🔗 Ver
+                            </a>
+                            <button
+                              onClick={() =>
+                                handleEliminarFile(file.id, file.fileName)
+                              }
+                              className={`px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
+                                lightMode
+                                  ? "bg-slate-50 border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                                  : "bg-white/5 border-white/5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/5"
+                              }`}
+                            >
+                              🗑️
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
