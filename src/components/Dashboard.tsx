@@ -948,7 +948,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
                   <p
                     className={`text-[11px] font-bold uppercase tracking-widest ${lightMode ? "text-slate-400" : "text-slate-500"}`}
                   >
-                    As Nossas Marcas
+                    Ferramentas do ecossistema
                   </p>
                   <button
                     onClick={() => handleAddNewEntity("marca")}
