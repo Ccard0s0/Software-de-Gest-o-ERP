@@ -56,11 +56,20 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ user, onSignOut }: DashboardProps) {
+  // Estado para controlar se o componente está montado (para evitar SSR mismatch)
+  const [mounted, setMounted] = useState(false);
+  
   // Estado para controlar o Light/Dark mode com persistência no localStorage
-  const [lightMode, setLightMode] = useState<boolean>(() => {
+  const [lightMode, setLightMode] = useState<boolean>(false);
+
+  useEffect(() => {
+    setMounted(true);
+    // Ler o tema salvo apenas no cliente
     const saved = localStorage.getItem("eugeen_light_mode");
-    return saved === "true";
-  });
+    if (saved === "true") {
+      setLightMode(true);
+    }
+  }, []);
 
   const [brands, setBrands] = useState<Brand[]>(() => {
     const dadosGuardados = localStorage.getItem("eugeen_brands");
@@ -125,6 +134,8 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
 
   // Efeito para alternar a classe no HTML para o Light Mode funcionar
   useEffect(() => {
+    if (!mounted) return;
+    
     if (lightMode) {
       document.documentElement.classList.add("light");
       document.documentElement.classList.remove("dark");
@@ -134,7 +145,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
       document.documentElement.classList.add("dark");
       localStorage.setItem("eugeen_light_mode", "false");
     }
-  }, [lightMode]);
+  }, [lightMode, mounted]);
 
   const getTargetUuid = (id: string): string => {
     if (id.startsWith("factor")) return BRAND_UUID_MAP["factor"];
