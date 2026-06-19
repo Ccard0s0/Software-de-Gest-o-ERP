@@ -1,8 +1,14 @@
 import React from "react";
 
-export default function BackgroundWaves() {
+interface BackgroundWavesProps {
+  lightMode?: boolean;
+}
+
+export default function BackgroundWaves({ lightMode = false }: BackgroundWavesProps) {
   return (
-    <div className="fixed inset-0 w-screen h-screen overflow-hidden pointer-events-none z-0 bg-[#0A0915]">
+    <div className={`fixed inset-0 w-screen h-screen overflow-hidden pointer-events-none z-0 transition-colors duration-300 ${
+      lightMode ? "bg-slate-50" : "bg-[#0A0915]"
+    }`}>
       {/* Injeção de CSS nativo para criar o efeito de ondulação fluida */}
       <style>{`
         @keyframes waveMove1 {
@@ -38,7 +44,9 @@ export default function BackgroundWaves() {
       `}</style>
 
       <svg
-        className="absolute inset-0 w-full h-full opacity-40"
+        className={`absolute inset-0 w-full h-full transition-opacity duration-300 ${
+          lightMode ? "opacity-10" : "opacity-40"
+        }`}
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 1440 900"
         preserveAspectRatio="xMidYMid slice"
@@ -52,8 +60,8 @@ export default function BackgroundWaves() {
             x2="100%"
             y2="100%"
           >
-            <stop offset="0%" stopColor="#cd1eb9" stopOpacity="0.25" />
-            <stop offset="40%" stopColor="#8b5cf6" stopOpacity="0.15" />
+            <stop offset="0%" stopColor="#cd1eb9" stopOpacity={lightMode ? "0.08" : "0.25"} />
+            <stop offset="40%" stopColor="#8b5cf6" stopOpacity={lightMode ? "0.05" : "0.15"} />
             <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
           </linearGradient>
 
@@ -65,8 +73,8 @@ export default function BackgroundWaves() {
             x2="0%"
             y2="100%"
           >
-            <stop offset="0%" stopColor="#E9644A" stopOpacity="0.2" />
-            <stop offset="60%" stopColor="#5bbfeb" stopOpacity="0.05" />
+            <stop offset="0%" stopColor="#E9644A" stopOpacity={lightMode ? "0.06" : "0.2"} />
+            <stop offset="60%" stopColor="#5bbfeb" stopOpacity={lightMode ? "0.02" : "0.05"} />
             <stop offset="100%" stopColor="#0A0915" stopOpacity="0" />
           </linearGradient>
         </defs>

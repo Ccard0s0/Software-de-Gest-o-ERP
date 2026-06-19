@@ -56,8 +56,11 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ user, onSignOut }: DashboardProps) {
-  // Estado para controlar o Light/Dark mode
-  const [lightMode, setLightMode] = useState<boolean>(false);
+  // Estado para controlar o Light/Dark mode com persistência no localStorage
+  const [lightMode, setLightMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem("eugeen_light_mode");
+    return saved === "true";
+  });
 
   const [brands, setBrands] = useState<Brand[]>(() => {
     const dadosGuardados = localStorage.getItem("eugeen_brands");
@@ -125,9 +128,11 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
     if (lightMode) {
       document.documentElement.classList.add("light");
       document.documentElement.classList.remove("dark");
+      localStorage.setItem("eugeen_light_mode", "true");
     } else {
+      document.documentElement.classList.remove("dark");
       document.documentElement.classList.add("dark");
-      document.documentElement.classList.remove("light");
+      localStorage.setItem("eugeen_light_mode", "false");
     }
   }, [lightMode]);
 
@@ -157,9 +162,9 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
       confirmButtonText: "Adicionar",
       cancelButtonText: "Cancelar",
       confirmButtonColor: "#6366F1",
-      cancelButtonColor: "#475569",
-      background: "#1E293B",
-      color: "#FFFFFF",
+      cancelButtonColor: lightMode ? "#cbd5e1" : "#475569",
+      background: lightMode ? "#ffffff" : "#1E293B",
+      color: lightMode ? "#0f172a" : "#FFFFFF",
       inputValidator: (value) => {
         if (!value || value.trim() === "") {
           return "Precisas de introduzir um nome válido!";
@@ -206,8 +211,8 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
       text: `A estrutura para "${entityName.trim()}" foi criada com sucesso com UUID válido.`,
       icon: "success",
       confirmButtonColor: "#6366F1",
-      background: "#1E293B",
-      color: "#FFFFFF",
+      background: lightMode ? "#ffffff" : "#1E293B",
+      color: lightMode ? "#0f172a" : "#FFFFFF",
     });
   };
 
@@ -226,9 +231,9 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
       confirmButtonText: "Sim, eliminar!",
       cancelButtonText: "Cancelar",
       confirmButtonColor: "#EF4444",
-      cancelButtonColor: "#475569",
-      background: "#1E293B",
-      color: "#FFFFFF",
+      cancelButtonColor: lightMode ? "#cbd5e1" : "#475569",
+      background: lightMode ? "#ffffff" : "#1E293B",
+      color: lightMode ? "#0f172a" : "#FFFFFF",
     });
 
     if (!isConfirmed) return;
@@ -245,8 +250,8 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
       text: `O item "${name}" foi removido com sucesso.`,
       icon: "success",
       confirmButtonColor: "#6366F1",
-      background: "#1E293B",
-      color: "#FFFFFF",
+      background: lightMode ? "#ffffff" : "#1E293B",
+      color: lightMode ? "#0f172a" : "#FFFFFF",
     });
   };
 
@@ -475,8 +480,8 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
         icon: "success",
         timer: 1500,
         showConfirmButton: false,
-        background: "#1E293B",
-        color: "#FFFFFF",
+        background: lightMode ? "#ffffff" : "#1E293B",
+        color: lightMode ? "#0f172a" : "#FFFFFF",
       });
     } catch (error: any) {
       console.error("Erro ao apagar ficheiro:", error.message);
@@ -509,9 +514,9 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
       confirmButtonText: "Seguinte ➡",
       cancelButtonText: "Cancelar",
       confirmButtonColor: "#6366F1",
-      cancelButtonColor: "#475569",
-      background: "#1E293B",
-      color: "#FFFFFF",
+      cancelButtonColor: lightMode ? "#cbd5e1" : "#475569",
+      background: lightMode ? "#ffffff" : "#1E293B",
+      color: lightMode ? "#0f172a" : "#FFFFFF",
     });
 
     if (!destinoId) return;
@@ -524,8 +529,8 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
         text: "O destino selecionado não possui nenhuma pasta criada para receber ficheiros.",
         icon: "warning",
         confirmButtonColor: "#6366F1",
-        background: "#1E293B",
-        color: "#FFFFFF",
+        background: lightMode ? "#ffffff" : "#1E293B",
+        color: lightMode ? "#0f172a" : "#FFFFFF",
       });
       return;
     }
@@ -545,9 +550,9 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
       confirmButtonText: "Confirmar e Mover",
       cancelButtonText: "Voltar",
       confirmButtonColor: "#10B981",
-      cancelButtonColor: "#475569",
-      background: "#1E293B",
-      color: "#FFFFFF",
+      cancelButtonColor: lightMode ? "#cbd5e1" : "#475569",
+      background: lightMode ? "#ffffff" : "#1E293B",
+      color: lightMode ? "#0f172a" : "#FFFFFF",
     });
 
     if (!novaPastaDestino) return;
@@ -578,8 +583,8 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
         text: `O ficheiro foi transferido para ${alvo.name} na pasta /${novaPastaDestino}.`,
         icon: "success",
         confirmButtonColor: "#6366F1",
-        background: "#1E293B",
-        color: "#FFFFFF",
+        background: lightMode ? "#ffffff" : "#1E293B",
+        color: lightMode ? "#0f172a" : "#FFFFFF",
       });
     } catch (error: any) {
       console.error("Erro ao mover ficheiro:", error.message);
@@ -588,8 +593,8 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
         text: error.message,
         icon: "error",
         confirmButtonColor: "#EF4444",
-        background: "#1E293B",
-        color: "#FFFFFF",
+        background: lightMode ? "#ffffff" : "#1E293B",
+        color: lightMode ? "#0f172a" : "#FFFFFF",
       });
     }
   };
@@ -619,8 +624,8 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
       didOpen: () => {
         Swal.showLoading();
       },
-      background: "#1E293B",
-      color: "#FFFFFF",
+      background: lightMode ? "#ffffff" : "#1E293B",
+      color: lightMode ? "#0f172a" : "#FFFFFF",
     });
 
     try {
@@ -715,8 +720,8 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
             : `Todos os ${filesArray.length} ficheiros foram carregados com sucesso.`,
         icon: "success",
         confirmButtonColor: "#6366F1",
-        background: "#1E293B",
-        color: "#FFFFFF",
+        background: lightMode ? "#ffffff" : "#1E293B",
+        color: lightMode ? "#0f172a" : "#FFFFFF",
       });
     } catch (error: any) {
       console.error(error);
@@ -725,8 +730,8 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
         text: `Ocorreu um problema ao enviar os ficheiros: ${error.message}`,
         icon: "error",
         confirmButtonColor: "#EF4444",
-        background: "#1E293B",
-        color: "#FFFFFF",
+        background: lightMode ? "#ffffff" : "#1E293B",
+        color: lightMode ? "#0f172a" : "#FFFFFF",
       });
     } finally {
       if (e.target) e.target.value = "";
@@ -747,18 +752,35 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
     : "";
 
   return (
-    <div className="flex h-screen w-full font-sans antialiased overflow-hidden bg-[#0A0915] text-slate-200">
+    <div className={`flex h-screen w-full font-sans antialiased overflow-hidden transition-colors duration-300 ${
+      lightMode ? "bg-slate-50 text-slate-900" : "bg-[#0A0915] text-slate-200"
+    }`}>
       <style>{`
         .swal2-select, .swal2-input {
-          background-color: #1E293B !important;
-          color: #FFFFFF !important;
-          border: 1px solid #475569 !important;
+          background-color: ${lightMode ? '#f1f5f9' : '#1E293B'} !important;
+          color: ${lightMode ? '#0f172a' : '#FFFFFF'} !important;
+          border: 1px solid ${lightMode ? '#cbd5e1' : '#475569'} !important;
           border-radius: 12px !important;
           padding: 10px !important;
         }
         .swal2-popup {
           border-radius: 24px !important;
           font-family: sans-serif !important;
+          background-color: ${lightMode ? '#ffffff' : '#1E293B'} !important;
+          color: ${lightMode ? '#0f172a' : '#FFFFFF'} !important;
+        }
+        .swal2-title {
+          color: ${lightMode ? '#0f172a' : '#FFFFFF'} !important;
+        }
+        .swal2-html-container {
+          color: ${lightMode ? '#475569' : '#cbd5e1'} !important;
+        }
+        .swal2-confirm {
+          background: linear-gradient(to right, #6366f1, #8b5cf6) !important;
+        }
+        .swal2-cancel {
+          background-color: ${lightMode ? '#e2e8f0' : '#475569'} !important;
+          color: ${lightMode ? '#0f172a' : '#ffffff'} !important;
         }
         .custom-scrollbar::-webkit-scrollbar {
           width: 5px;
@@ -768,11 +790,11 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
           background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.1);
+          background: ${lightMode ? 'rgba(148, 163, 184, 0.5)' : 'rgba(255, 255, 255, 0.1)'};
           border-radius: 99px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.2);
+          background: ${lightMode ? 'rgba(148, 163, 184, 0.7)' : 'rgba(255, 255, 255, 0.2)'};
         }
         ::-webkit-scrollbar {
           width: 6px;
@@ -782,7 +804,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
           background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-          background: #1E293B;
+          background: ${lightMode ? '#cbd5e1' : '#1E293B'};
           border-radius: 99px;
         }
         .entity-btn .delete-btn {
@@ -1060,7 +1082,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
 
       {/* ÁREA DE CONTEÚDO PRINCIPAL */}
       <main className="flex-1 relative flex flex-col overflow-hidden z-10">
-        <BackgroundWaves />
+        <BackgroundWaves lightMode={lightMode} />
 
         {currentView === "hub" ? (
           /* ==========================================
@@ -1103,7 +1125,9 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
                     : "bg-[#0d0b1f]/40 border-white/5"
                 }`}
               >
-                <div className="relative w-28 h-28 shrink-0 rounded-full flex items-center justify-center p-1 shadow-inner bg-slate-950/20">
+                <div className={`relative w-28 h-28 shrink-0 rounded-full flex items-center justify-center p-1 shadow-inner ${
+                  lightMode ? "bg-slate-200/50" : "bg-slate-950/20"
+                }`}>
                   <div
                     className="absolute inset-0 rounded-full opacity-80"
                     style={{ backgroundImage: conicGradientValue }}
@@ -1456,7 +1480,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
             {/* Sub-Navegação de Pastas Estilo Tabs */}
             <div
               className={`px-6 py-3 border-b flex items-center justify-between gap-4 overflow-x-auto custom-scrollbar ${
-                lightMode ? "bg-slate-50/50 border-slate-200" : "bg-[#090717]/20 border-white/5"
+                lightMode ? "bg-slate-100/50 border-slate-200" : "bg-[#090717]/20 border-white/5"
               }`}
             >
               <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-1">
