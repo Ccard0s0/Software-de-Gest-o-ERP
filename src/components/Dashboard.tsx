@@ -612,7 +612,6 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
     const targetUuid = getTargetUuid(selectedBrandId);
     const filesArray = Array.from(selectedFiles);
 
-    // Alerta inicial do progresso geral dos uploads múltiplos
     Swal.fire({
       title: "A carregar ficheiros...",
       text: `A processar 1 de ${filesArray.length} ficheiros. Por favor aguarde.`,
@@ -628,7 +627,6 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
       for (let i = 0; i < filesArray.length; i++) {
         const uploadedFile = filesArray[i];
 
-        // Atualiza a mensagem da modal para indicar qual o ficheiro a ser processado
         if (filesArray.length > 1) {
           Swal.update({
             text: `A processar ${i + 1} de ${filesArray.length} (${uploadedFile.name})...`,
@@ -709,7 +707,6 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
         }
       }
 
-      // Sucesso final após carregar o array completo
       Swal.fire({
         title: "Sucesso!",
         text:
@@ -762,6 +759,20 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
         .swal2-popup {
           border-radius: 24px !important;
           font-family: sans-serif !important;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 5px;
+          height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 99px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.2);
         }
         ::-webkit-scrollbar {
           width: 6px;
@@ -833,7 +844,6 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
                 }
               >
                 {lightMode ? (
-                  /* Em Modo Claro, mostra a Lua para mudar para o Escuro */
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -849,7 +859,6 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
                     />
                   </svg>
                 ) : (
-                  /* Em Modo Escuro, mostra o Sol para mudar para o Claro */
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -935,7 +944,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
                           onClick={(e) => handleDeleteEntity(e, b.id, b.name)}
                           className={`delete-btn text-xs p-1 transition-colors ${lightMode ? "text-slate-400 hover:text-rose-600" : "text-slate-400 hover:text-rose-400"}`}
                         >
-                          🗑️
+                          ✕
                         </span>
                       </button>
                     ))}
@@ -943,12 +952,12 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
               </div>
 
               {/* MARCAS */}
-              <div className="pt-4">
+              <div className="pt-6">
                 <div className="px-4 flex items-center justify-between mb-3">
                   <p
                     className={`text-[11px] font-bold uppercase tracking-widest ${lightMode ? "text-slate-400" : "text-slate-500"}`}
                   >
-                    Ferramentas do ecossistema
+                    As Nossas Marcas
                   </p>
                   <button
                     onClick={() => handleAddNewEntity("marca")}
@@ -991,7 +1000,7 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
                           onClick={(e) => handleDeleteEntity(e, b.id, b.name)}
                           className={`delete-btn text-xs p-1 transition-colors ${lightMode ? "text-slate-400 hover:text-rose-600" : "text-slate-400 hover:text-rose-400"}`}
                         >
-                          🗑️
+                          ✕
                         </span>
                       </button>
                     ))}
@@ -1001,520 +1010,610 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
           </div>
         </div>
 
+        {/* FOOTER SIDEBAR */}
         <div
-          className={`p-4 border-t flex flex-col gap-3 transition-colors duration-300 ${lightMode ? "border-slate-200 bg-slate-50" : "border-white/5 bg-black/20"}`}
+          className={`p-4 border-t transition-colors duration-300 ${
+            lightMode ? "border-slate-200 bg-slate-50 text-slate-700" : "border-white/5 bg-[#070514]/40"
+          }`}
         >
-          <div className="flex items-center justify-between text-xs pt-1">
-            <span
-              className={`truncate font-medium pr-2 ${lightMode ? "text-slate-600" : "text-slate-400"}`}
-            >
-              {user?.email || "cardoso200614@gmail.com"}
-            </span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5 max-w-[150px]">
+              <div className="w-8 h-8 rounded-lg bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center font-bold text-sm shrink-0">
+                👤
+              </div>
+              <div className="truncate">
+                <p
+                  className={`text-xs font-semibold truncate ${lightMode ? "text-slate-800" : "text-white"}`}
+                >
+                  {user?.email || "Visitante"}
+                </p>
+                <p className="text-[10px] text-slate-500">Acesso total</p>
+              </div>
+            </div>
             <button
               onClick={onSignOut}
-              className={`font-bold bg-transparent p-0 border-none cursor-pointer transition-colors ${lightMode ? "text-slate-500 hover:text-rose-600" : "text-slate-400 hover:text-rose-400"}`}
+              className={`p-2 rounded-lg transition-colors ${
+                lightMode
+                  ? "hover:bg-rose-50 text-rose-600"
+                  : "hover:bg-rose-500/10 text-rose-400"
+              }`}
+              title="Sair da Conta"
             >
-              Sair
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                className="w-4 h-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+                />
+              </svg>
             </button>
           </div>
         </div>
       </aside>
 
-      {/* MAIN CONTENT - Correção do fundo escuro geral */}
-      <main
-        className={`flex-1 flex flex-col h-full overflow-hidden relative transition-all duration-300 ${
-          lightMode
-            ? "bg-slate-50"
-            : "bg-gradient-to-b from-[#0e0c24] to-[#06050f]"
-        }`}
-      >
-        {/* Desativa completamente as ondas de fundo no Light Mode */}
-        {!lightMode && <BackgroundWaves />}
+      {/* ÁREA DE CONTEÚDO PRINCIPAL */}
+      <main className="flex-1 relative flex flex-col overflow-hidden z-10">
+        <BackgroundWaves />
 
-        {/* VISTA 1: HUB GLOBAL */}
-        {currentView === "hub" && (
-          <div className="flex flex-col h-full w-full overflow-y-auto relative z-10">
-            <header
-              className={`h-20 border-b px-8 flex items-center justify-between shrink-0 backdrop-blur-sm transition-colors duration-300 ${
-                lightMode
-                  ? "border-slate-200 bg-white"
-                  : "border-white/5 bg-black/10"
-              }`}
-            >
+        {currentView === "hub" ? (
+          /* ==========================================
+             VISUALIZAÇÃO DO HUB PRINCIPAL (DASHBOARD GLOBAL)
+             ========================================== */
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-8 relative z-10 space-y-8">
+            {/* Cabeçalho */}
+            <div className="flex items-center justify-between">
               <div>
                 <h1
-                  className={`text-2xl font-black tracking-tight transition-colors ${lightMode ? "text-slate-800" : "text-white"}`}
+                  className={`text-3xl font-black tracking-tight ${lightMode ? "text-slate-900" : "text-white"}`}
                 >
-                  Hub de Arquivos Digitais
+                  Painel Central de Ativos
                 </h1>
+                <p
+                  className={`text-sm mt-1 ${lightMode ? "text-slate-500" : "text-slate-400"}`}
+                >
+                  Gestão global unificada de marcas, empresas e repositórios da
+                  Eugeen.
+                </p>
               </div>
-              <span
-                className={`text-xs px-3 py-1.5 rounded-xl font-bold border shadow-sm transition-all ${
+              <div
+                className={`px-4 py-2 rounded-xl text-xs font-semibold backdrop-blur-md shadow-sm border ${
                   lightMode
-                    ? "bg-indigo-50 text-indigo-600 border-indigo-200"
-                    : "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                    ? "bg-white/80 border-slate-200 text-slate-700"
+                    : "bg-white/5 border-white/5 text-slate-300"
                 }`}
               >
-                {files.length} Arquivos
-              </span>
-            </header>
+                📁 {files.length} ficheiros indexados
+              </div>
+            </div>
 
-            <div className="p-8 max-w-7xl w-full mx-auto space-y-8 flex-1">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* GRÁFICO CIRCULAR */}
-                <div
-                  className={`p-6 rounded-2xl border backdrop-blur-md shadow-xl flex flex-col items-center justify-center relative min-h-62.5 transition-colors duration-300 ${
-                    lightMode
-                      ? "border-slate-200 bg-white shadow-slate-200/20"
-                      : "border-white/5 bg-[#121026]/40"
-                  }`}
-                >
-                  <div className="flex items-center gap-8 w-full justify-center">
-                    <div
-                      className="w-32 h-32 rounded-full relative flex items-center justify-center shadow-lg"
-                      style={{
-                        backgroundImage: conicGradientValue || "none",
-                        backgroundColor: lightMode ? "#F1F5F9" : "#1E293B",
-                      }}
+            {/* Widgets e Estatísticas Superiores */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              {/* Gráfico Analítico de Armazenamento */}
+              <div
+                className={`p-6 rounded-3xl border shadow-xl flex items-center gap-6 xl:col-span-2 backdrop-blur-md transition-all duration-300 ${
+                  lightMode
+                    ? "bg-white border-slate-200 text-slate-800"
+                    : "bg-[#0d0b1f]/40 border-white/5"
+                }`}
+              >
+                <div className="relative w-28 h-28 shrink-0 rounded-full flex items-center justify-center p-1 shadow-inner bg-slate-950/20">
+                  <div
+                    className="absolute inset-0 rounded-full opacity-80"
+                    style={{ backgroundImage: conicGradientValue }}
+                  />
+                  <div
+                    className={`w-22 h-22 rounded-full flex flex-col items-center justify-center z-10 shadow-lg ${
+                      lightMode ? "bg-white" : "bg-[#0c0a1a]"
+                    }`}
+                  >
+                    <span
+                      className={`text-xl font-black ${lightMode ? "text-slate-900" : "text-white"}`}
                     >
-                      <div
-                        className={`w-24 h-24 rounded-full flex flex-col items-center justify-center transition-colors duration-300 ${
-                          lightMode ? "bg-white" : "bg-[#0d0b1f]"
-                        }`}
-                      >
-                        <span
-                          className={`text-3xl font-black transition-colors ${lightMode ? "text-slate-800" : "text-white"}`}
-                        >
-                          {files.length}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 text-xs">
-                      {brands.map((b) => (
-                        <div key={b.id} className="flex items-center gap-2">
-                          <span
-                            className="w-2.5 h-2.5 rounded-full"
-                            style={{
-                              backgroundColor: b.color,
-                              boxShadow: lightMode
-                                ? `0 0 4px ${b.color}60`
-                                : `0 0 6px ${b.color}`,
-                            }}
-                          ></span>
-                          <span
-                            className={
-                              lightMode
-                                ? "text-slate-600 font-semibold"
-                                : "text-slate-300"
-                            }
-                          >
-                            {b.name}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                      {brands.length}
+                    </span>
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-slate-500">
+                      Entidades
+                    </span>
                   </div>
                 </div>
 
-                {/* CARTÕES DAS EMPRESAS */}
-                <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {brands.map((b) => {
-                    const count = files.filter(
-                      (f) => f.brandId === b.id,
-                    ).length;
-                    return (
-                      <div
-                        key={b.id}
-                        onClick={() => handleOpenBrandPage(b.id)}
-                        style={{
-                          borderColor: lightMode ? `#E2E8F0` : `${b.color}20`,
-                        }}
-                        className={`p-6 rounded-2xl border backdrop-blur-md shadow-md cursor-pointer hover:scale-[1.01] transition-all duration-300 flex flex-col justify-between group relative overflow-hidden ${
-                          lightMode
-                            ? "bg-white shadow-slate-100"
-                            : "bg-[#121026]/30"
-                        }`}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.borderColor = b.color;
-                          e.currentTarget.style.boxShadow = lightMode
-                            ? `0 10px 25px ${b.color}15`
-                            : `0 0 20px ${b.color}25`;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.borderColor = lightMode
-                            ? `#E2E8F0`
-                            : `${b.color}20`;
-                          e.currentTarget.style.boxShadow = "none";
-                        }}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3
-                              className={`text-xs font-bold uppercase tracking-wider transition-colors ${
-                                lightMode
-                                  ? "text-slate-400 group-hover:text-slate-700"
-                                  : "text-slate-400 group-hover:text-white"
-                              }`}
-                            >
-                              {b.name}
-                            </h3>
-                            <div
-                              className={`text-3xl font-black mt-2 transition-colors ${lightMode ? "text-slate-800" : "text-white"}`}
-                            >
-                              {count}
-                            </div>
-                          </div>
-                          <div
-                            className="w-8 h-8 rounded-lg flex items-center justify-center font-bold"
-                            style={{
-                              backgroundColor: `${b.color}15`,
-                              color: b.color,
-                            }}
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h3
+                      className={`text-base font-bold ${lightMode ? "text-slate-900" : "text-white"}`}
+                    >
+                      Distribuição Operacional
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      O rácio proporcional de arquivos alocados em cada infraestrutura
+                      do ecossistema.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-2">
+                    {brands.map((b) => {
+                      const count = files.filter((f) => f.brandId === b.id).length;
+                      return (
+                        <div
+                          key={b.id}
+                          className="flex items-center gap-2 text-xs"
+                        >
+                          <span
+                            className="w-2.5 h-2.5 rounded-full"
+                            style={{ backgroundColor: b.color }}
+                          ></span>
+                          <span
+                            className={`font-medium ${lightMode ? "text-slate-700" : "text-slate-300"}`}
                           >
-                            📁
-                          </div>
+                            {b.name}
+                          </span>
+                          <span className="text-slate-500 font-mono">
+                            ({count})
+                          </span>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
-              {/* ATIVIDADE RECENTE - Corrigido para fundo branco/claro */}
+              {/* Bloco de Atividade de Upload Recente */}
               <div
-                className={`p-6 rounded-2xl border shadow-md transition-colors duration-300 ${
+                className={`p-6 rounded-3xl border shadow-xl flex flex-col justify-between backdrop-blur-md transition-all duration-300 ${
                   lightMode
-                    ? "border-slate-200 bg-white"
-                    : "border-white/5 bg-[#121026]/20"
+                    ? "bg-white border-slate-200 text-slate-800"
+                    : "bg-[#0d0b1f]/40 border-white/5"
                 }`}
               >
-                <h2
-                  className={`text-lg font-black mb-4 transition-colors ${lightMode ? "text-slate-800" : "text-white"}`}
-                >
-                  Atividade Recente no Servidor
-                </h2>
-                <div className="space-y-3">
-                  {activities.length === 0 ? (
-                    <p className="text-sm text-slate-500 italic">
-                      Nenhuma atividade recente detetada.
-                    </p>
-                  ) : (
-                    activities.map((act) => (
-                      <div
-                        key={act.id}
-                        className={`flex items-center justify-between text-sm p-3 rounded-xl border backdrop-blur-sm transition-colors duration-300 ${
-                          lightMode
-                            ? "bg-slate-50 border-slate-150"
-                            : "bg-white/5 border-white/5"
-                        }`}
-                      >
-                        <div>
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3
+                      className={`text-sm font-bold uppercase tracking-wider ${lightMode ? "text-slate-400" : "text-slate-500"}`}
+                    >
+                      Atividade do Servidor
+                    </h3>
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  </div>
+                  <div className="space-y-3">
+                    {activities.length === 0 ? (
+                      <p className="text-xs text-slate-500 italic py-2">
+                        Nenhum upload ou alteração efetuada recentemente.
+                      </p>
+                    ) : (
+                      activities.map((act) => (
+                        <div key={act.id} className="text-xs leading-relaxed">
                           <span
-                            className={`font-bold ${lightMode ? "text-slate-800" : "text-slate-300"}`}
+                            className={`font-semibold ${lightMode ? "text-slate-800" : "text-slate-300"}`}
                           >
                             {act.user}
                           </span>{" "}
-                          <span
-                            className={
-                              lightMode ? "text-slate-500" : "text-slate-400"
-                            }
-                          >
-                            {act.action}
+                          <span className="text-slate-500">
+                            {act.action === "eliminou"
+                              ? "removeu"
+                              : act.action === "eliminou_pasta"
+                                ? "eliminou a pasta"
+                                : "adicionou"}
                           </span>{" "}
                           <span
-                            className={`font-semibold ${lightMode ? "text-indigo-600" : "text-indigo-400"}`}
+                            className={`font-medium ${lightMode ? "text-indigo-600" : "text-indigo-400"}`}
                           >
-                            {act.fileName || act.folderName}
+                            {act.action === "eliminou_pasta"
+                              ? act.folderName
+                              : act.fileName || act.folderName}
                           </span>{" "}
+                          <span className="text-slate-500">em</span>{" "}
                           <span
-                            className={
-                              lightMode ? "text-slate-400" : "text-slate-500"
-                            }
+                            className={`font-semibold ${lightMode ? "text-slate-700" : "text-slate-400"}`}
                           >
-                            em {act.brandName}
+                            {act.brandName}
                           </span>
+                          <p className="text-[10px] text-slate-500 tracking-wide mt-0.5">
+                            {act.time}
+                          </p>
                         </div>
-                        <span
-                          className={
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SEPARAÇÃO POR CATEGORIAS (SECÇÕES CLARAS) */}
+            <div className="space-y-8">
+              {/* SECÇÃO SUPERIOR: EMPRESAS */}
+              <div className="space-y-4">
+                <div className="border-b border-white/5 pb-2">
+                  <h2
+                    className={`text-lg font-bold uppercase tracking-wider ${
+                      lightMode ? "text-slate-700" : "text-slate-400"
+                    }`}
+                  >
+                    Empresas
+                  </h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {brands
+                    .filter((b) => b.type === "empresa")
+                    .map((b) => {
+                      const countFiles = files.filter(
+                        (f) => f.brandId === b.id,
+                      ).length;
+                      return (
+                        <div
+                          key={b.id}
+                          onClick={() => handleOpenBrandPage(b.id)}
+                          className={`group p-6 rounded-2xl border transition-all duration-300 cursor-pointer hover:-translate-y-1 relative backdrop-blur-md shadow-md ${
                             lightMode
-                              ? "text-slate-400 text-xs"
-                              : "text-slate-500 text-xs"
-                          }
+                              ? "bg-white border-slate-200 hover:border-slate-300 hover:shadow-xl text-slate-800"
+                              : "bg-[#0d0b1f]/30 border-white/5 hover:border-white/10 hover:bg-[#12102b]/50 hover:shadow-2xl hover:shadow-purple-950/10"
+                          }`}
                         >
-                          {act.time}
-                        </span>
-                      </div>
-                    ))
-                  )}
+                          <div className="flex items-center justify-between mb-4">
+                            <span
+                              className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider shadow-sm"
+                              style={{
+                                backgroundColor: `${b.color}15`,
+                                color: b.color,
+                                border: `1px solid ${b.color}30`,
+                              }}
+                            >
+                              {b.type}
+                            </span>
+                            <div
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold transition-all text-base ${
+                                lightMode
+                                  ? "bg-slate-100 text-slate-400 group-hover:bg-slate-200"
+                                  : "bg-white/5 text-slate-500 group-hover:bg-white/10 group-hover:text-slate-300"
+                              }`}
+                            >
+                              📁
+                            </div>
+                          </div>
+
+                          <h2
+                            className={`text-xl font-bold tracking-tight group-hover:text-indigo-400 transition-colors ${
+                              lightMode ? "text-slate-900" : "text-white"
+                            }`}
+                          >
+                            {b.name}
+                          </h2>
+
+                          <div className="mt-4 flex items-baseline gap-1.5 text-slate-500">
+                            <span
+                              className={`text-2xl font-black ${
+                                lightMode ? "text-slate-800" : "text-white"
+                              }`}
+                            >
+                              {countFiles}
+                            </span>
+                            <span className="text-xs font-medium">
+                              ficheiros guardados
+                            </span>
+                          </div>
+
+                          <div
+                            className="absolute bottom-0 left-0 right-0 h-1 rounded-b-2xl opacity-40 group-hover:opacity-100 transition-opacity"
+                            style={{ backgroundColor: b.color }}
+                          />
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+
+              {/* SECÇÃO INFERIOR: MARCAS */}
+              <div className="space-y-4">
+                <div className="border-b border-white/5 pb-2">
+                  <h2
+                    className={`text-lg font-bold uppercase tracking-wider ${
+                      lightMode ? "text-slate-700" : "text-slate-400"
+                    }`}
+                  >
+                    Marcas
+                  </h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {brands
+                    .filter((b) => b.type === "marca")
+                    .map((b) => {
+                      const countFiles = files.filter(
+                        (f) => f.brandId === b.id,
+                      ).length;
+                      return (
+                        <div
+                          key={b.id}
+                          onClick={() => handleOpenBrandPage(b.id)}
+                          className={`group p-6 rounded-2xl border transition-all duration-300 cursor-pointer hover:-translate-y-1 relative backdrop-blur-md shadow-md ${
+                            lightMode
+                              ? "bg-white border-slate-200 hover:border-slate-300 hover:shadow-xl text-slate-800"
+                              : "bg-[#0d0b1f]/30 border-white/5 hover:border-white/10 hover:bg-[#12102b]/50 hover:shadow-2xl hover:shadow-purple-950/10"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-4">
+                            <span
+                              className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider shadow-sm"
+                              style={{
+                                backgroundColor: `${b.color}15`,
+                                color: b.color,
+                                border: `1px solid ${b.color}30`,
+                              }}
+                            >
+                              {b.type}
+                            </span>
+                            <div
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold transition-all text-base ${
+                                lightMode
+                                  ? "bg-slate-100 text-slate-400 group-hover:bg-slate-200"
+                                  : "bg-white/5 text-slate-500 group-hover:bg-white/10 group-hover:text-slate-300"
+                              }`}
+                            >
+                              📁
+                            </div>
+                          </div>
+
+                          <h2
+                            className={`text-xl font-bold tracking-tight group-hover:text-indigo-400 transition-colors ${
+                              lightMode ? "text-slate-900" : "text-white"
+                            }`}
+                          >
+                            {b.name}
+                          </h2>
+
+                          <div className="mt-4 flex items-baseline gap-1.5 text-slate-500">
+                            <span
+                              className={`text-2xl font-black ${
+                                lightMode ? "text-slate-800" : "text-white"
+                              }`}
+                            >
+                              {countFiles}
+                            </span>
+                            <span className="text-xs font-medium">
+                              ficheiros guardados
+                            </span>
+                          </div>
+
+                          <div
+                            className="absolute bottom-0 left-0 right-0 h-1 rounded-b-2xl opacity-40 group-hover:opacity-100 transition-opacity"
+                            style={{ backgroundColor: b.color }}
+                          />
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             </div>
           </div>
-        )}
-
-        {/* VISTA 2: PASTA ESPECÍFICA */}
-        {currentView === "brand-view" && activeBrand && (
-          <div className="flex flex-col h-full w-full overflow-hidden relative z-10">
-            <header
-              className={`h-20 border-b px-8 flex items-center justify-between shrink-0 backdrop-blur-sm transition-colors duration-300 ${
-                lightMode
-                  ? "border-slate-200 bg-white"
-                  : "border-white/5 bg-black/10"
+        ) : (
+          /* ==========================================
+             VISUALIZAÇÃO DE UMA ENTIDADE / PASTA ESPECÍFICA
+             ========================================== */
+          <div className="flex-1 flex flex-col overflow-hidden relative z-10">
+            {/* Barra Superior da Entidade Activa */}
+            <div
+              className={`p-6 border-b flex flex-col md:flex-row md:items-center justify-between gap-4 backdrop-blur-md ${
+                lightMode ? "bg-white/90 border-slate-200" : "bg-[#0b091a]/40 border-white/5"
               }`}
             >
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => setCurrentView("hub")}
-                  className={`px-4 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                  className={`p-2.5 rounded-xl transition-all border ${
                     lightMode
-                      ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200"
+                      ? "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
                       : "bg-white/5 border-white/5 text-slate-300 hover:bg-white/10"
                   }`}
+                  title="Voltar ao Hub"
                 >
-                  ⬅ Voltar ao Hub
+                  ⬅
                 </button>
-                <div className="flex items-center gap-3">
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{
-                      backgroundColor: activeBrand.color,
-                      boxShadow: lightMode
-                        ? `0 0 6px ${activeBrand.color}80`
-                        : `0 0 10px ${activeBrand.color}`,
-                    }}
-                  ></span>
-                  <h1
-                    className={`text-xl font-black tracking-tight transition-colors ${lightMode ? "text-slate-800" : "text-white"}`}
-                  >
-                    {activeBrand.name}
-                  </h1>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-3 h-3 rounded-full shadow-md"
+                      style={{
+                        backgroundColor: activeBrand?.color,
+                        boxShadow: `0 0 10px ${activeBrand?.color}`,
+                      }}
+                    ></span>
+                    <h1
+                      className={`text-2xl font-black tracking-tight ${lightMode ? "text-slate-900" : "text-white"}`}
+                    >
+                      {activeBrand?.name}
+                    </h1>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    ID Estático:{" "}
+                    <span className="font-mono bg-slate-950/10 px-1 py-0.5 rounded text-slate-400">
+                      {selectedBrandId ? getTargetUuid(selectedBrandId) : ""}
+                    </span>
+                  </p>
                 </div>
               </div>
 
-              <button
-                onClick={triggerFileSelection}
-                className="px-5 py-2.5 text-xs font-bold rounded-xl text-white transition-all shadow-lg shadow-indigo-600/20 cursor-pointer hover:opacity-90"
-                style={{
-                  background: `linear-gradient(135deg, ${activeBrand.color}, #6366F1)`,
-                }}
-              >
-                📥 Carregar Arquivo
-              </button>
-            </header>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleAddFolder}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 border border-white/5 text-slate-300 transition-colors"
+                >
+                  📁 Nova Pasta
+                </button>
+                <button
+                  onClick={triggerFileSelection}
+                  disabled={!selectedFolderName}
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-indigo-600/20 hover:opacity-90 transition-opacity disabled:opacity-40"
+                >
+                  📤 Carregar Arquivos
+                </button>
+              </div>
+            </div>
 
-            <div className="flex-1 flex overflow-hidden">
-              {/* SUB-SIDEBAR DE PASTAS */}
-              <div
-                className={`w-56 border-r p-4 space-y-4 flex flex-col justify-between shrink-0 backdrop-blur-md transition-colors duration-300 ${
-                  lightMode
-                    ? "border-slate-200 bg-white"
-                    : "border-white/5 bg-black/10"
-                }`}
-              >
-                <div className="space-y-1">
-                  <p
-                    className={`text-[10px] font-bold uppercase tracking-widest px-3 mb-2 ${lightMode ? "text-slate-400" : "text-slate-500"}`}
-                  >
-                    Pastas Internas
-                  </p>
-                  {activeBrand.folders.map((folder) => (
+            {/* Sub-Navegação de Pastas Estilo Tabs */}
+            <div
+              className={`px-6 py-3 border-b flex items-center justify-between gap-4 overflow-x-auto custom-scrollbar ${
+                lightMode ? "bg-slate-50/50 border-slate-200" : "bg-[#090717]/20 border-white/5"
+              }`}
+            >
+              <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-1">
+                {activeBrand?.folders.map((folder) => {
+                  const isSelected = selectedFolderName === folder;
+                  const fCount = files.filter(
+                    (f) =>
+                      f.brandId === selectedBrandId && f.folderName === folder,
+                  ).length;
+
+                  return (
                     <div
                       key={folder}
                       onClick={() => setSelectedFolderName(folder)}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium cursor-pointer transition-all group/folder ${
-                        selectedFolderName === folder
+                      className={`px-4 py-2 rounded-xl text-xs font-bold cursor-pointer transition-all shrink-0 flex items-center gap-2 border ${
+                        isSelected
                           ? lightMode
-                            ? "bg-slate-100 text-slate-900 font-bold border border-slate-200 shadow-sm"
-                            : "bg-white/5 text-white font-bold border border-white/10"
+                            ? "bg-white border-slate-300 text-indigo-600 shadow-sm"
+                            : "bg-white/10 border-white/10 text-white shadow-inner"
                           : lightMode
-                            ? "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                            : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+                            ? "bg-transparent border-transparent text-slate-500 hover:bg-slate-100"
+                            : "bg-transparent border-transparent text-slate-400 hover:bg-white/5"
                       }`}
                     >
-                      <span className="truncate">📁 {folder}</span>
+                      <span>📂 {folder}</span>
+                      <span
+                        className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono ${
+                          isSelected
+                            ? "bg-indigo-500/20 text-indigo-400"
+                            : "bg-slate-950/20 text-slate-500"
+                        }`}
+                      >
+                        {fCount}
+                      </span>
                       <button
                         onClick={(e) => handleEliminarFolder(e, folder)}
-                        className={`opacity-0 group-hover/folder:opacity-100 p-0.5 transition-opacity ${lightMode ? "text-slate-400 hover:text-rose-600" : "text-slate-500 hover:text-rose-400"}`}
+                        className="text-slate-500 hover:text-rose-400 transition-colors ml-1 font-normal text-sm"
+                        title="Eliminar Pasta"
                       >
-                        🗑️
+                        ×
                       </button>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
+              </div>
+            </div>
 
-                <button
-                  onClick={handleAddFolder}
-                  className={`w-full py-2.5 text-center text-xs font-bold rounded-xl border border-dashed transition-all cursor-pointer ${
-                    lightMode
-                      ? "border-slate-300 text-slate-500 hover:text-slate-800 hover:border-slate-400"
-                      : "border-white/10 text-slate-400 hover:text-white hover:border-white/30"
+            {/* Listagem de Ficheiros */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+              {loadingFiles ? (
+                <div className="h-40 flex items-center justify-center text-sm text-slate-500 gap-2 font-medium">
+                  <span className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                  A ler repositório na Cloud...
+                </div>
+              ) : currentFiles.length === 0 ? (
+                <div
+                  className={`h-64 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center text-center p-6 ${
+                    lightMode ? "border-slate-200" : "border-white/5"
                   }`}
                 >
-                  ＋ Criar Nova Pasta
-                </button>
-              </div>
-
-              {/* LISTAGEM DE ARQUIVOS */}
-              <div className="flex-1 p-8 overflow-y-auto">
-                <div className="mb-6 flex items-center justify-between">
-                  <h2
-                    className={`text-sm font-bold uppercase tracking-wider ${lightMode ? "text-slate-500" : "text-slate-400"}`}
+                  <p className="text-2xl mb-1">📦</p>
+                  <h3
+                    className={`text-sm font-bold ${lightMode ? "text-slate-700" : "text-slate-300"}`}
                   >
-                    Ficheiros em /
-                    <span
-                      className={`ml-1 normal-case ${lightMode ? "text-slate-700 font-black" : "text-slate-200"}`}
-                    >
-                      {selectedFolderName || "Nenhuma pasta selecionada"}
-                    </span>
-                  </h2>
-                  <span className="text-xs text-slate-500 font-medium">
-                    {currentFiles.length} itens encontrados
-                  </span>
+                    Nenhum ficheiro detetado
+                  </h3>
+                  <p className="text-xs text-slate-500 max-w-xs mt-1">
+                    Esta subpasta está vazia. Arrasta ou clica no botão superior para
+                    guardar referências.
+                  </p>
                 </div>
-
-                {loadingFiles ? (
-                  <div className="text-center py-20 text-slate-500 text-sm">
-                    A carregar ficheiros...
-                  </div>
-                ) : currentFiles.length === 0 ? (
-                  <div
-                    className={`flex flex-col items-center justify-center border border-dashed rounded-2xl py-24 text-slate-500 text-sm backdrop-blur-sm transition-colors duration-300 ${
-                      lightMode
-                        ? "border-slate-200 bg-white"
-                        : "border-white/5 bg-black/5"
-                    }`}
-                  >
-                    <span className="text-3xl mb-2">📁</span>
-                    <span>
-                      Esta pasta está vazia. Carrega ficheiros para começar.
-                    </span>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {currentFiles.map((file) => {
-                      // Validação de segurança para o TypeScript: impede erros de propriedades indefinidas
-                      if (!file || !file.id || !file.fileName) return null;
-
-                      // Função auxiliar para analisar a extensão e gerar o Preview/Ícone correto
-                      const renderFileIcon = () => {
-                        const extension =
-                          file.fileName.split(".").pop()?.toLowerCase() || "";
-                        const isImage = [
-                          "png",
-                          "jpg",
-                          "jpeg",
-                          "gif",
-                          "webp",
-                          "svg",
-                        ].includes(extension);
-
-                        if (isImage && file.fileUrl) {
-                          return (
-                            <img
-                              src={file.fileUrl}
-                              alt={file.fileName}
-                              className="w-full h-full object-cover rounded-lg"
-                              onError={(e) => {
-                                // Fallback caso o link da imagem quebre
-                                e.currentTarget.style.display = "none";
-                                if (e.currentTarget.parentElement) {
-                                  e.currentTarget.parentElement.innerText =
-                                    "🖼️";
-                                }
-                              }}
-                            />
-                          );
-                        }
-
-                        // Ícones costumizados para outros formatos comuns
-                        if (extension === "pdf") return "📕";
-                        if (["zip", "rar", "7z"].includes(extension))
-                          return "📦";
-                        if (["doc", "docx"].includes(extension)) return "📘";
-                        if (["xls", "xlsx", "csv"].includes(extension))
-                          return "🍏";
-
-                        return "📄"; // Fallback por defeito
-                      };
-
-                      return (
-                        <div
-                          key={file.id}
-                          className={`p-4 rounded-xl border backdrop-blur-sm flex flex-col justify-between group/file transition-all duration-300 ${
-                            lightMode
-                              ? "border-slate-200 bg-white shadow-sm hover:border-slate-300 hover:shadow-md"
-                              : "border-white/5 bg-[#121026]/20 hover:border-white/10"
-                          }`}
-                        >
-                          <div className="flex items-start gap-3">
-                            {/* Contentor do Ícone/Preview adaptado */}
-                            <div
-                              className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0 overflow-hidden ${
-                                lightMode
-                                  ? "bg-slate-50 border border-slate-100"
-                                  : "bg-white/5"
-                              }`}
-                            >
-                              {renderFileIcon()}
-                            </div>
-                            <div className="truncate min-w-0 flex-1">
-                              <h4
-                                className={`text-xs font-bold truncate transition-colors ${lightMode ? "text-slate-700" : "text-slate-200"}`}
-                                title={file.fileName}
-                              >
-                                {file.fileName}
-                              </h4>
-                              <p className="text-[11px] text-slate-500 mt-0.5">
-                                {file.size}
-                              </p>
-                            </div>
-                          </div>
-
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {currentFiles.map((file) => {
+                    const isImage = /\.(jpeg|jpg|gif|png|webp|svg)$/i.test(
+                      file.fileName,
+                    );
+                    return (
+                      <div
+                        key={file.id}
+                        className={`p-4 rounded-xl border flex flex-col justify-between gap-3 group transition-all relative ${
+                          lightMode
+                            ? "bg-white border-slate-200 hover:shadow-lg text-slate-800"
+                            : "bg-[#0d0b1f]/20 border-white/5 hover:border-white/10 hover:bg-[#0f0d24]/50"
+                        }`}
+                      >
+                        <div>
+                          {/* Miniatura ou Preview do Tipo de Ficheiro */}
                           <div
-                            className={`flex items-center justify-end gap-2 mt-4 pt-3 border-t ${lightMode ? "border-slate-100" : "border-white/5"}`}
+                            className={`w-full h-32 rounded-lg mb-3 overflow-hidden flex items-center justify-center relative border shadow-inner ${
+                              lightMode ? "bg-slate-50 border-slate-100" : "bg-slate-950/40 border-white/5"
+                            }`}
                           >
-                            <button
-                              onClick={() => handleMoverFile(file.id)}
-                              className={`px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
-                                lightMode
-                                  ? "bg-slate-50 border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50"
-                                  : "bg-white/5 border-white/5 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/5"
-                              }`}
-                            >
-                              📦 Mover
-                            </button>
-                            <a
-                              href={file.fileUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className={`px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition-all text-center cursor-pointer ${
-                                lightMode
-                                  ? "bg-slate-50 border-slate-200 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50"
-                                  : "bg-white/5 border-white/5 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/5"
-                              }`}
-                            >
-                              🔗 Ver
-                            </a>
-                            <button
-                              onClick={() =>
-                                handleEliminarFile(file.id, file.fileName)
-                              }
-                              className={`px-2.5 py-1.5 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
-                                lightMode
-                                  ? "bg-slate-50 border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
-                                  : "bg-white/5 border-white/5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/5"
-                              }`}
-                            >
-                              🗑️
-                            </button>
+                            {isImage ? (
+                              <img
+                                src={file.fileUrl}
+                                alt={file.fileName}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <span className="text-3xl filter drop-shadow">
+                                📄
+                              </span>
+                            )}
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                              <button
+                                onClick={() => handleMoverFile(file.id)}
+                                className="p-1.5 rounded-md bg-slate-900/80 text-white backdrop-blur hover:bg-slate-800 text-xs shadow"
+                                title="Mover ficheiro de diretório"
+                              >
+                                🔄
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleEliminarFile(file.id, file.fileName)
+                                }
+                                className="p-1.5 rounded-md bg-rose-950/80 text-rose-300 backdrop-blur hover:bg-rose-900 text-xs shadow border border-rose-500/20"
+                                title="Eliminar definitivamente"
+                              >
+                                🗑
+                              </button>
+                            </div>
                           </div>
+
+                          <p
+                            className={`text-xs font-bold line-clamp-2 break-all ${
+                              lightMode ? "text-slate-900" : "text-white"
+                            }`}
+                            title={file.fileName}
+                          >
+                            {file.fileName}
+                          </p>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+
+                        <div className="flex items-center justify-between mt-1 pt-2 border-t border-white/5">
+                          <span className="text-[10px] font-mono text-slate-500">
+                            {file.size}
+                          </span>
+                          <a
+                            href={file.fileUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={`text-[10px] font-bold tracking-wider uppercase transition-colors ${
+                              lightMode
+                                ? "text-indigo-600 hover:text-indigo-700"
+                                : "text-indigo-400 hover:text-indigo-300"
+                            }`}
+                          >
+                            Aceder Ativo ↗
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         )}
