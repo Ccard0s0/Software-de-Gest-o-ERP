@@ -10,7 +10,7 @@ export default function BackgroundWaves({
   return (
     <div
       className={`fixed inset-0 w-screen h-screen overflow-hidden pointer-events-none z-0 transition-colors duration-300 ${
-        lightMode ? "bg-slate-50" : "bg-[#0A0915]"
+        lightMode ? "bg-transparent" : "bg-[#0A0915]"
       }`}
     >
       {/* Injeção de CSS nativo para criar o efeito de ondulação fluida */}
@@ -67,12 +67,12 @@ export default function BackgroundWaves({
             <stop
               offset="0%"
               stopColor="#cd1eb9"
-              stopOpacity={lightMode ? "0.08" : "0.25"}
+              stopOpacity={lightMode ? "0" : "0.25"}
             />
             <stop
               offset="40%"
               stopColor="#8b5cf6"
-              stopOpacity={lightMode ? "0.05" : "0.15"}
+              stopOpacity={lightMode ? "0" : "0.15"}
             />
             <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
           </linearGradient>
@@ -88,12 +88,12 @@ export default function BackgroundWaves({
             <stop
               offset="0%"
               stopColor="#E9644A"
-              stopOpacity={lightMode ? "0.06" : "0.2"}
+              stopOpacity={lightMode ? "0" : "0.2"}
             />
             <stop
               offset="60%"
               stopColor="#5bbfeb"
-              stopOpacity={lightMode ? "0.02" : "0.05"}
+              stopOpacity={lightMode ? "0" : "0.05"}
             />
             <stop offset="100%" stopColor="#0A0915" stopOpacity="0" />
           </linearGradient>

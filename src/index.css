@@ -5,10 +5,12 @@
 /* Light/Dark Mode Support */
 html {
   color-scheme: dark;
+  background: #0a0516;
 }
 
 html.light {
   color-scheme: light;
+  background: #f8fafc;
 }
 
 body {
@@ -20,6 +22,68 @@ body {
 html.light body {
   background-color: #f8fafc;
   color: #0f172a;
+}
+
+html.light .dark-bg {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+html.light .dark-border {
+  border-color: rgba(148, 163, 184, 0.25) !important;
+}
+
+html.light .dark-text {
+  color: #0f172a !important;
+}
+
+html.light .dark-muted {
+  color: #475569 !important;
+}
+
+html.light .dark-input {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: rgba(148, 163, 184, 0.35) !important;
+}
+
+html.light .dark-input::placeholder {
+  color: #64748b !important;
+}
+
+html.light .dark-card {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: rgba(148, 163, 184, 0.25) !important;
+}
+
+html.light .dark-card-soft {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: rgba(148, 163, 184, 0.25) !important;
+}
+
+html.light .dark-button {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: rgba(148, 163, 184, 0.35) !important;
+}
+
+html.light .dark-button:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+html.light .dark-link {
+  color: #4f46e5 !important;
+}
+
+html.light .dark-link:hover {
+  color: #4338ca !important;
+}
+
+html.light .dark-shadow {
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
 }
 
 /* Custom scrollbar */

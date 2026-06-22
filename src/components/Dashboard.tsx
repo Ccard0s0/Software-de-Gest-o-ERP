@@ -56,20 +56,14 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ user, onSignOut }: DashboardProps) {
-  // Estado para controlar se o componente está montado (para evitar SSR mismatch)
-  // FIX: Added mounted state to prevent hydration mismatch on Vercel SSR
   const [mounted, setMounted] = useState(false);
-  
-  // Estado para controlar o Light/Dark mode com persistência no localStorage
-  const [lightMode, setLightMode] = useState<boolean>(false);
+  const [lightMode, setLightMode] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("eugeen_light_mode") === "true";
+  });
 
   useEffect(() => {
     setMounted(true);
-    // Ler o tema salvo apenas no cliente
-    const saved = localStorage.getItem("eugeen_light_mode");
-    if (saved === "true") {
-      setLightMode(true);
-    }
   }, []);
 
   const [brands, setBrands] = useState<Brand[]>(() => {
@@ -136,17 +130,27 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
   // Efeito para alternar a classe no HTML para o Light Mode funcionar
   useEffect(() => {
     if (!mounted) return;
-    
+
     if (lightMode) {
       document.documentElement.classList.add("light");
       document.documentElement.classList.remove("dark");
       localStorage.setItem("eugeen_light_mode", "true");
     } else {
-      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.remove("light");
       document.documentElement.classList.add("dark");
       localStorage.setItem("eugeen_light_mode", "false");
     }
   }, [lightMode, mounted]);
+
+  const toggleLightMode = () => {
+    setLightMode((prev) => {
+      const next = !prev;
+      document.documentElement.classList.toggle("light", next);
+      document.documentElement.classList.toggle("dark", !next);
+      localStorage.setItem("eugeen_light_mode", String(next));
+      return next;
+    });
+  };
 
   const getTargetUuid = (id: string): string => {
     if (id.startsWith("factor")) return BRAND_UUID_MAP["factor"];
