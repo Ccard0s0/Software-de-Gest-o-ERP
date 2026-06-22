@@ -9,7 +9,6 @@ import Swal from "sweetalert2";
 
 // @ts-ignore
 import { supabase } from "../supabaseClient";
-import BackgroundWaves from "./BackgroundWaves";
 
 // Mapa de IDs estáticos conhecidos na Base de Dados
 const BRAND_UUID_MAP: Record<string, string> = {
@@ -127,29 +126,16 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
     (f) => f.brandId === selectedBrandId && f.folderName === selectedFolderName,
   );
 
-  // Efeito para alternar a classe no HTML para o Light Mode funcionar
   useEffect(() => {
-    if (!mounted) return;
+    if (typeof document === "undefined") return;
 
-    if (lightMode) {
-      document.documentElement.classList.add("light");
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("eugeen_light_mode", "true");
-    } else {
-      document.documentElement.classList.remove("light");
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("eugeen_light_mode", "false");
-    }
-  }, [lightMode, mounted]);
+    document.documentElement.classList.toggle("light", lightMode);
+    document.documentElement.classList.toggle("dark", !lightMode);
+    localStorage.setItem("eugeen_light_mode", String(lightMode));
+  }, [lightMode]);
 
   const toggleLightMode = () => {
-    setLightMode((prev) => {
-      const next = !prev;
-      document.documentElement.classList.toggle("light", next);
-      document.documentElement.classList.toggle("dark", !next);
-      localStorage.setItem("eugeen_light_mode", String(next));
-      return next;
-    });
+    setLightMode((prev) => !prev);
   };
 
   const getTargetUuid = (id: string): string => {
@@ -1098,7 +1084,6 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
 
       {/* ÁREA DE CONTEÚDO PRINCIPAL */}
       <main className="flex-1 relative flex flex-col overflow-hidden z-10">
-        <BackgroundWaves lightMode={lightMode} />
 
         {currentView === "hub" ? (
           /* ==========================================

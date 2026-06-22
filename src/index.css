@@ -86,6 +86,91 @@ html.light .dark-shadow {
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
 }
 
+/* Login light mode */
+html.light .login-bg {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+html.light .login-left-bg {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: rgba(148, 163, 184, 0.25) !important;
+}
+
+html.light .login-right-bg {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+html.light .login-title {
+  color: #0f172a !important;
+}
+
+html.light .login-muted {
+  color: #475569 !important;
+}
+
+html.light .login-card {
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: #0f172a !important;
+  border-color: rgba(148, 163, 184, 0.35) !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
+}
+
+html.light .login-label {
+  color: #334155 !important;
+}
+
+html.light .login-input {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: rgba(148, 163, 184, 0.35) !important;
+}
+
+html.light .login-input::placeholder {
+  color: #64748b !important;
+}
+
+html.light .login-primary {
+  background: #4f46e5 !important;
+  color: #ffffff !important;
+  border-color: #4f46e5 !important;
+}
+
+html.light .login-primary:hover {
+  background: #4338ca !important;
+  color: #ffffff !important;
+}
+
+html.light .login-divider {
+  background: rgba(148, 163, 184, 0.35) !important;
+}
+
+html.light .login-divider-text {
+  color: #64748b !important;
+}
+
+html.light .login-google {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: rgba(148, 163, 184, 0.35) !important;
+}
+
+html.light .login-google:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: rgba(148, 163, 184, 0.5) !important;
+}
+
+html.light .login-switch {
+  color: #4f46e5 !important;
+}
+
+html.light .login-switch:hover {
+  color: #4338ca !important;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
