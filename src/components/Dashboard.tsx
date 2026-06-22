@@ -57,6 +57,7 @@ interface DashboardProps {
 
 export default function Dashboard({ user, onSignOut }: DashboardProps) {
   // Estado para controlar se o componente está montado (para evitar SSR mismatch)
+  // FIX: Added mounted state to prevent hydration mismatch on Vercel SSR
   const [mounted, setMounted] = useState(false);
   
   // Estado para controlar o Light/Dark mode com persistência no localStorage
