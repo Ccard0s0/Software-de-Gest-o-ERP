@@ -57,20 +57,11 @@ interface DashboardProps {
 export default function Dashboard({ user, onSignOut }: DashboardProps) {
   const [mounted, setMounted] = useState(false);
   const [lightMode, setLightMode] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    const saved = localStorage.getItem("eugeen_light_mode");
-    const initial = saved === "true";
-    const domHasLight =
-      typeof document !== "undefined" &&
-      document.documentElement.classList.contains("light");
-    console.log("[THEME][2-react-init]", {
-      saved,
-      reactInitial: initial ? "LIGHT" : "DARK",
-      domAlreadyPainted: domHasLight ? "LIGHT" : "DARK",
-      mismatch: (domHasLight ? "LIGHT" : "DARK") !== (initial ? "LIGHT" : "DARK"),
-      t: performance.now().toFixed(1) + "ms",
-    });
-    return initial;
+    // Fuente única de verdad: heredamos la decisión que el script anti-flash
+    // de index.html ya aplicó al <html> antes de pintar. Así React nunca
+    // recalcula un valor distinto (que provocaría el parpadeo en el primer render).
+    if (typeof document === "undefined") return false;
+    return document.documentElement.classList.contains("light");
   });
 
   useEffect(() => {
@@ -141,19 +132,9 @@ export default function Dashboard({ user, onSignOut }: DashboardProps) {
   useEffect(() => {
     if (typeof document === "undefined") return;
 
-    const before = document.documentElement.classList.contains("light")
-      ? "LIGHT"
-      : "DARK";
     document.documentElement.classList.toggle("light", lightMode);
     document.documentElement.classList.toggle("dark", !lightMode);
     localStorage.setItem("eugeen_light_mode", String(lightMode));
-    const after = lightMode ? "LIGHT" : "DARK";
-    console.log("[THEME][3-react-effect]", {
-      before,
-      after,
-      flipped: before !== after ? "⚠️ FLASH (cambió tras pintar)" : "ok (sin cambio)",
-      t: performance.now().toFixed(1) + "ms",
-    });
   }, [lightMode]);
 
   const toggleLightMode = () => {

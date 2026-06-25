@@ -13,14 +13,7 @@
           const shouldUseLight = saved === 'true' || (saved === null && prefersLight);
           document.documentElement.classList.toggle('light', shouldUseLight);
           document.documentElement.classList.toggle('dark', !shouldUseLight);
-          console.log('[THEME][1-inline-html]', {
-            saved: saved,
-            prefersLight: prefersLight,
-            shouldUseLight: shouldUseLight,
-            painted: shouldUseLight ? 'LIGHT' : 'DARK',
-            t: performance.now().toFixed(1) + 'ms'
-          });
-        } catch (e) { console.error('[THEME][1-inline-html] error', e); }
+        } catch (e) {}
       })();
     </script>
   </head>
